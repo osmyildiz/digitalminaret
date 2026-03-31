@@ -19,6 +19,7 @@ import '../../data/services/audio_service.dart';
 import '../../data/services/adhan_pack_download_service.dart';
 import '../../data/services/notification_service.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/widget_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/prayer_provider.dart';
 import '../providers/settings_provider.dart';
@@ -588,6 +589,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await provider.saveSettings(
       provider.settings.copyWith(locale: selectedLocale),
     );
+    // Update widget and notifications with new locale
+    if (mounted) {
+      final prayerProvider = context.read<PrayerProvider>();
+      prayerProvider.setLocale(selectedLocale);
+      final times = prayerProvider.prayerTimes;
+      if (times != null) {
+        await WidgetService().updateWidget(times, locale: selectedLocale);
+        await _syncNotifications();
+      }
+    }
   }
 
   Future<void> _openAdhanPackPicker({

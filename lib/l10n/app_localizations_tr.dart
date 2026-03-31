@@ -478,7 +478,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String hijriDateFormat(String day, String month, String year) {
-    return '$day $month $year H';
+    return '$day $month $year';
   }
 
   @override
@@ -488,7 +488,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get eidAlAdha => 'Kurban Bayramı Namazı';
 
   @override
-  String get qibla => 'Kible';
+  String get qibla => 'Kıble';
 
   @override
   String get towardsTheQibla => 'KIBLE YONU';

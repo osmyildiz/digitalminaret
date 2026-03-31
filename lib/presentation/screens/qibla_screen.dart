@@ -295,8 +295,8 @@ class _QiblaScreenState extends State<QiblaScreen>
         final qiblaAngle = data.qiblah;
         final direction = data.direction;
         final compassRotation = -direction * (math.pi / 180);
-        final qiblaNeedleRotation =
-            (qiblaAngle - direction) * (math.pi / 180);
+        // Same formula as mini compass: qiblah is already relative to device
+        final qiblaNeedleRotation = qiblaAngle * (math.pi / 180) * -1;
 
         // Update light cone direction
         WidgetsBinding.instance.addPostFrameCallback((_) {

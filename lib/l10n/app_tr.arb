@@ -165,11 +165,11 @@
   "hijriShawwal": "Şevval",
   "hijriDhuAlQadah": "Zilkade",
   "hijriDhuAlHijjah": "Zilhicce",
-  "hijriDateFormat": "{day} {month} {year} H",
+  "hijriDateFormat": "{day} {month} {year}",
   "eidAlFitr": "Ramazan Bayramı Namazı",
   "eidAlAdha": "Kurban Bayramı Namazı",
 
-  "qibla": "Kible",
+  "qibla": "Kıble",
   "towardsTheQibla": "KIBLE YONU",
   "compassNotAvailable": "Bu cihazda pusula sensoru bulunmuyor.",
   "locationRequiredForQibla": "Kible yonunu belirlemek icin konum gereklidir."
