@@ -161,23 +161,7 @@ class _QiblaScreenState extends State<QiblaScreen>
               ),
             ),
           ),
-          // Light beam - full screen, trigonometry based
-          Positioned.fill(
-            child: IgnorePointer(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return CustomPaint(
-                    size: Size(constraints.maxWidth, constraints.maxHeight),
-                    painter: _FullScreenBeamPainter(
-                      qiblaAngleRad: _qiblaNeedleAngleRad,
-                      color: palette.coneColor,
-                      screenHeight: constraints.maxHeight,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+          // (light beam removed)
           // Content
           SafeArea(
             child: Column(
@@ -722,112 +706,6 @@ class _QiblaNeedlePainter extends CustomPainter {
 
 /// Triangular light beam: narrow at compass center, widens toward Kaaba.
 /// Drawn pointing UP; Transform.rotate aligns it with qibla direction.
-/// Full-screen beam painter. Uses trigonometry from compass center.
-/// No Transform.rotate needed - beam direction computed directly.
-class _FullScreenBeamPainter extends CustomPainter {
-  const _FullScreenBeamPainter({
-    required this.qiblaAngleRad,
-    required this.color,
-    required this.screenHeight,
-  });
-
-  final double qiblaAngleRad;
-  final Color color;
-  final double screenHeight;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    // Compass center is roughly 46% from top of screen
-    final cy = screenHeight * 0.46;
-
-    // Direction vector toward qibla
-    final dirX = math.sin(qiblaAngleRad);
-    final dirY = -math.cos(qiblaAngleRad);
-
-    // Perpendicular vector for beam width
-    final perpX = -dirY;
-    final perpY = dirX;
-
-    // Beam extends 800px from compass center
-    const beamLength = 800.0;
-    final endX = cx + dirX * beamLength;
-    final endY = cy + dirY * beamLength;
-
-    // Outer wide beam: 90px wide at center → 10px at tip
-    const halfWidthStart = 90.0;
-    const halfWidthEnd = 10.0;
-
-    final outerPath = Path()
-      ..moveTo(cx + perpX * halfWidthStart, cy + perpY * halfWidthStart)
-      ..lineTo(cx - perpX * halfWidthStart, cy - perpY * halfWidthStart)
-      ..lineTo(endX - perpX * halfWidthEnd, endY - perpY * halfWidthEnd)
-      ..lineTo(endX + perpX * halfWidthEnd, endY + perpY * halfWidthEnd)
-      ..close();
-
-    final outerPaint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(cx, cy),
-        Offset(endX, endY),
-        [
-          color.withValues(alpha: 0.35),
-          color.withValues(alpha: 0.18),
-          color.withValues(alpha: 0.05),
-          Colors.transparent,
-        ],
-        const [0.0, 0.2, 0.5, 1.0],
-      )
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28);
-    canvas.drawPath(outerPath, outerPaint);
-
-    // Core beam: narrower, brighter
-    const coreHalfStart = 36.0;
-    const coreHalfEnd = 4.0;
-    final coreEndX = cx + dirX * beamLength * 0.7;
-    final coreEndY = cy + dirY * beamLength * 0.7;
-
-    final corePath = Path()
-      ..moveTo(cx + perpX * coreHalfStart, cy + perpY * coreHalfStart)
-      ..lineTo(cx - perpX * coreHalfStart, cy - perpY * coreHalfStart)
-      ..lineTo(coreEndX - perpX * coreHalfEnd, coreEndY - perpY * coreHalfEnd)
-      ..lineTo(coreEndX + perpX * coreHalfEnd, coreEndY + perpY * coreHalfEnd)
-      ..close();
-
-    final corePaint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(cx, cy),
-        Offset(coreEndX, coreEndY),
-        [
-          color.withValues(alpha: 0.30),
-          color.withValues(alpha: 0.10),
-          Colors.transparent,
-        ],
-        const [0.0, 0.35, 1.0],
-      )
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
-    canvas.drawPath(corePath, corePaint);
-
-    // Center line
-    final lineEndX = cx + dirX * beamLength * 0.5;
-    final lineEndY = cy + dirY * beamLength * 0.5;
-
-    final linePaint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(cx, cy),
-        Offset(lineEndX, lineEndY),
-        [color.withValues(alpha: 0.45), Colors.transparent],
-      )
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-    canvas.drawLine(Offset(cx, cy), Offset(lineEndX, lineEndY), linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _FullScreenBeamPainter old) =>
-      old.qiblaAngleRad != qiblaAngleRad || old.color != color;
-}
-
 // ─── Particles ────────────────────────────────────
 
 class _QiblaParticlePainter extends CustomPainter {
