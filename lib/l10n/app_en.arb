@@ -1,0 +1,200 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Digital Minaret",
+
+  "prayerFajr": "Fajr",
+  "prayerSunrise": "Sunrise",
+  "prayerDhuhr": "Dhuhr",
+  "prayerAsr": "Asr",
+  "prayerMaghrib": "Maghrib",
+  "prayerIsha": "Isha",
+  "prayerJumuah": "Jumuah",
+  "prayerIftar": "Iftar",
+  "prayerSuhoor": "Suhoor",
+
+  "arabicFajr": "فجر",
+  "arabicSunrise": "شروق",
+  "arabicDhuhr": "ظهر",
+  "arabicAsr": "عصر",
+  "arabicMaghrib": "مغرب",
+  "arabicIsha": "عشاء",
+  "arabicJumuah": "جمعة",
+
+  "suhoorEnds": "SUHOOR ENDS",
+  "iftarTime": "IFTAR TIME",
+
+  "unknown": "Unknown",
+
+  "welcome": "Welcome",
+  "welcomeSubtitle": "Set location, calculation method, and madhab to start with accurate prayer times.",
+  "continueButton": "Continue",
+  "close": "Close",
+  "ok": "OK",
+  "notNow": "Not Now",
+  "submit": "Submit",
+  "cancel": "Cancel",
+  "download": "Download",
+  "retry": "Retry",
+  "settings": "Settings",
+
+  "stepLocation": "1. Location",
+  "useCurrentLocation": "Use Current Location",
+  "enterLocation": "Enter Location",
+  "searchLocation": "Search Location",
+  "cityOrAddress": "City or address",
+  "noLocationSelected": "No location selected",
+  "locationSetTo": "Location set to {cityName}. Prayer times refreshed.",
+  "@locationSetTo": {
+    "placeholders": {
+      "cityName": {"type": "String"}
+    }
+  },
+  "locationUpdated": "Location updated and prayer times refreshed.",
+  "unableToGetLocation": "Unable to get location. Try manual search.",
+
+  "stepCalculationMethod": "2. Calculation Method",
+  "stepAsrMadhab": "3. Asr Madhab",
+  "stepFullAdhanPack": "4. Full Adhan Pack",
+  "adhanPackNote": "Notification adhan stays fixed at 30 seconds. This selection is used for full adhan when you tap the notification.",
+
+  "methodIsna": "North America (ISNA)",
+  "methodMuslimWorldLeague": "Muslim World League",
+  "methodTurkeyDiyanet": "Türkiye Diyanet",
+  "methodEgyptian": "Egyptian",
+  "methodKarachi": "Karachi (UISC)",
+  "methodUmmAlQura": "Umm al-Qura (Makkah)",
+  "methodDubai": "Dubai (Gulf Region)",
+  "methodSingapore": "Singapore / SE Asia",
+  "methodTehran": "Tehran (Iran)",
+
+  "madhabNonHanafi": "Non-Hanafi",
+  "madhabHanafi": "Hanafi",
+  "asrMadhab": "Asr Madhab",
+
+  "location": "Location",
+  "calculation": "Calculation",
+  "notifications": "Notifications",
+  "adhanAudio": "Adhan Audio",
+  "supportAndTrust": "Support & Trust",
+
+  "permissionNeeded": "Permission Needed",
+  "pleaseAllowNotifications": "Please allow notifications in iPhone Settings.",
+
+  "fullAdhanOnNotificationTap": "Full adhan on notification tap",
+  "playDuaAfterAdhan": "Play dua after adhan",
+  "adhanPackLabel": "Adhan Pack: {packName}",
+  "@adhanPackLabel": {
+    "placeholders": {
+      "packName": {"type": "String"}
+    }
+  },
+  "adhanPacks": "Adhan Packs",
+  "downloadAdhanPack": "Download Adhan Pack",
+  "adhanPackDownloadPrompt": "{packName} will be downloaded to your device. Continue?",
+  "@adhanPackDownloadPrompt": {
+    "placeholders": {
+      "packName": {"type": "String"}
+    }
+  },
+  "downloadingAdhanPack": "Downloading adhan pack...",
+  "downloadFailed": "Download failed: {error}",
+  "@downloadFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "packDownloaded": "{packName} downloaded.",
+  "@packDownloaded": {
+    "placeholders": {
+      "packName": {"type": "String"}
+    }
+  },
+
+  "donate": "Donate",
+  "donateSubtitle": "Support development if you wish.",
+  "sendFeedback": "Send Feedback",
+  "sendFeedbackSubtitle": "Open a quick form",
+  "widgetSetup": "Widget Setup",
+  "widgetSetupSubtitle": "How to add and refresh the live home screen widget.",
+  "privacyNotes": "Privacy Notes",
+  "privacyNotesSubtitle": "Read how data is handled on-device.",
+  "thankYouForUsing": "Thank you for using Digital Minaret.",
+  "appAlwaysFree": "This app will always stay ad-free and free to use.",
+
+  "rateDigitalMinaret": "Rate Digital Minaret",
+  "ratePromptMessage": "Are you enjoying the spiritual journey? Your feedback helps us illuminate the path.",
+
+  "couldNotOpenLink": "Could not open link on this device.",
+  "couldNotPlayPreview": "Could not play adhan preview: {error}",
+  "@couldNotPlayPreview": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "notificationsCouldNotBeScheduled": "Notifications could not be fully scheduled: {error}",
+  "@notificationsCouldNotBeScheduled": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "couldNotContinue": "Could not continue. Please try again. ({error})",
+  "@couldNotContinue": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "hadithOfTheDay": "Hadith of the Day",
+  "ramadanDua": "Ramadan Dua",
+  "verseFromQuran": "Verse from the Quran",
+  "hadithBody": "The month of Ramadan has come to you, a blessed month which Allah has obligated you to fast. (Nasa'i)",
+  "duaBody": "O Allah, I ask You for Your love, and the love of those who love You, and the deeds that bring me closer to Your love.",
+  "verseBody": "O you who have believed, decreed upon you is fasting as it was decreed upon those before you that you may become righteous. (Al-Baqarah 2:183)",
+
+  "supportTheApp": "Support the App",
+  "donateDescription": "This app is free and ad-free. If you want, you can support development with a one-time tip.",
+  "purchaseDidNotComplete": "Purchase did not complete.",
+  "thankYou": "Thank You",
+  "thankYouDonateMessage": "Your support means a lot. This helps keep the app free and ad-free.",
+  "smallTip": "Small Tip",
+  "mediumTip": "Medium Tip",
+  "largeTip": "Large Tip",
+  "donationOptionsUnavailable": "Donation options are not available yet.",
+  "donationOptionsSetup": "Add RevenueCat keys and store products (tip_small, tip_medium, tip_large), then retry.",
+
+  "feedbackSubject": "Feedback for Digital Minaret",
+  "mailCouldNotBeOpened": "Mail app could not be opened.",
+  "openMailApp": "Open Mail App",
+  "subject": "Subject",
+  "yourFeedback": "Your feedback",
+  "feedbackHint": "This opens your default mail app with prefilled fields.",
+
+  "privacyNoAccountRequired": "No account required",
+  "privacyNoAccountBody": "You can use the app without creating an account or sharing personal profile data.",
+  "privacyLocationOnDevice": "Location stays on device",
+  "privacyLocationBody": "Location is used only to calculate prayer times and is stored locally on your phone.",
+  "privacyNoAds": "No ads, no trackers",
+  "privacyNoAdsBody": "The app has no advertising SDK and no analytics tracking by default.",
+  "privacyNotificationsLocal": "Notifications are local",
+  "privacyNotificationsBody": "Prayer notifications are scheduled and triggered directly on device.",
+  "privacyFeedbackOptIn": "Feedback is opt-in",
+  "privacyFeedbackBody": "If you tap feedback, your default mail app opens. Nothing is sent automatically.",
+
+  "widgetSetupTitle": "Widget Setup",
+  "widgetLiveTitle": "Live Widget",
+  "widgetLiveBody": "The widget shows current prayer, next prayer and remaining time. Data updates when app calculates/syncs prayer times, and timeline refreshes each minute.",
+  "widgetIosTitle": "iOS",
+  "widgetIosBody": "Long press Home Screen > + > Digital Minaret > choose size > Add Widget.\nIf it does not appear after an update: remove widget, open app once, then add again.",
+  "widgetAndroidTitle": "Android",
+  "widgetAndroidBody": "Long press Home Screen > Widgets > Digital Minaret.\nIf stale: remove/re-add widget and open app once to push fresh times.",
+  "widgetTypographyTitle": "Typography",
+  "widgetTypographyBody": "Widget typography is aligned with app style (Cinzel + Manrope) on both iOS and Android.",
+
+  "language": "Language",
+
+  "qibla": "Qibla",
+  "towardsTheQibla": "TOWARDS THE QIBLA",
+  "compassNotAvailable": "Compass sensor not available on this device.",
+  "locationRequiredForQibla": "Location is required to determine Qibla direction."
+}

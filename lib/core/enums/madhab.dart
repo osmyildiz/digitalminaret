@@ -1,0 +1,1 @@
+enum Madhab { nonHanafi, hanafi }
