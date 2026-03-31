@@ -888,6 +888,96 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get language;
 
+  /// No description provided for @hijriMuharram.
+  ///
+  /// In en, this message translates to:
+  /// **'Muharram'**
+  String get hijriMuharram;
+
+  /// No description provided for @hijriSafar.
+  ///
+  /// In en, this message translates to:
+  /// **'Safar'**
+  String get hijriSafar;
+
+  /// No description provided for @hijriRabiAwwal.
+  ///
+  /// In en, this message translates to:
+  /// **'Rabi al-Awwal'**
+  String get hijriRabiAwwal;
+
+  /// No description provided for @hijriRabiThani.
+  ///
+  /// In en, this message translates to:
+  /// **'Rabi al-Thani'**
+  String get hijriRabiThani;
+
+  /// No description provided for @hijriJumadaAwwal.
+  ///
+  /// In en, this message translates to:
+  /// **'Jumada al-Awwal'**
+  String get hijriJumadaAwwal;
+
+  /// No description provided for @hijriJumadaThani.
+  ///
+  /// In en, this message translates to:
+  /// **'Jumada al-Thani'**
+  String get hijriJumadaThani;
+
+  /// No description provided for @hijriRajab.
+  ///
+  /// In en, this message translates to:
+  /// **'Rajab'**
+  String get hijriRajab;
+
+  /// No description provided for @hijriShaaban.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaaban'**
+  String get hijriShaaban;
+
+  /// No description provided for @hijriRamadan.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan'**
+  String get hijriRamadan;
+
+  /// No description provided for @hijriShawwal.
+  ///
+  /// In en, this message translates to:
+  /// **'Shawwal'**
+  String get hijriShawwal;
+
+  /// No description provided for @hijriDhuAlQadah.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhu al-Qadah'**
+  String get hijriDhuAlQadah;
+
+  /// No description provided for @hijriDhuAlHijjah.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhu al-Hijjah'**
+  String get hijriDhuAlHijjah;
+
+  /// No description provided for @hijriDateFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} {month} {year} AH'**
+  String hijriDateFormat(String day, String month, String year);
+
+  /// No description provided for @eidAlFitr.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid al-Fitr Prayer'**
+  String get eidAlFitr;
+
+  /// No description provided for @eidAlAdha.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid al-Adha Prayer'**
+  String get eidAlAdha;
+
   /// No description provided for @qibla.
   ///
   /// In en, this message translates to:

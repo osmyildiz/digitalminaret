@@ -439,6 +439,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
+  String get hijriMuharram => 'Muharram';
+
+  @override
+  String get hijriSafar => 'Safar';
+
+  @override
+  String get hijriRabiAwwal => 'Rabi al-Awwal';
+
+  @override
+  String get hijriRabiThani => 'Rabi al-Thani';
+
+  @override
+  String get hijriJumadaAwwal => 'Jumada al-Awwal';
+
+  @override
+  String get hijriJumadaThani => 'Jumada al-Thani';
+
+  @override
+  String get hijriRajab => 'Rajab';
+
+  @override
+  String get hijriShaaban => 'Shaaban';
+
+  @override
+  String get hijriRamadan => 'Ramadan';
+
+  @override
+  String get hijriShawwal => 'Shawwal';
+
+  @override
+  String get hijriDhuAlQadah => 'Dhu al-Qadah';
+
+  @override
+  String get hijriDhuAlHijjah => 'Dhu al-Hijjah';
+
+  @override
+  String hijriDateFormat(String day, String month, String year) {
+    return '$day $month $year AH';
+  }
+
+  @override
+  String get eidAlFitr => 'Eid al-Fitr Prayer';
+
+  @override
+  String get eidAlAdha => 'Eid al-Adha Prayer';
+
+  @override
   String get qibla => 'Qibla';
 
   @override

@@ -7,7 +7,6 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../core/utils/adhan_playback_bus.dart';
 import '../../core/constants/notification_ids.dart';
-import '../../core/constants/prayer_names.dart';
 import '../../core/enums/prayer_alert_mode.dart';
 import '../../core/enums/prayer_type.dart';
 import '../models/prayer_times_model.dart';
@@ -20,6 +19,82 @@ class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
 
   factory NotificationService() => _instance;
+
+  /// Localized notification strings per locale.
+  static const Map<String, Map<String, String>> _strings = {
+    'en': {
+      'in_minutes': '{prayer} in 15 minutes',
+      'prepare': 'You have 15 minutes to prepare.',
+      'time': '{prayer} time',
+      'started': 'Prayer time has started. Tap to listen to the adhan.',
+      'tashreeq_title': 'Reminder: Takbir al-Tashreeq',
+      'tashreeq_body': 'Do not forget the blessed Tashreeq takbir.',
+      'jumuah': 'Jumu\'ah Mubarak',
+    },
+    'tr': {
+      'in_minutes': '{prayer} vaktine 15 dakika',
+      'prepare': 'Hazırlanmak için 15 dakikanız var.',
+      'time': '{prayer} vakti',
+      'started': 'Namaz vakti girdi. Ezan dinlemek için dokunun.',
+      'tashreeq_title': 'Hatırlatma: Teşrik Tekbiri',
+      'tashreeq_body': 'Mübarek teşrik tekbirini unutmayın.',
+      'jumuah': 'Hayırlı Cumalar',
+    },
+    'ar': {
+      'in_minutes': '{prayer} بعد 15 دقيقة',
+      'prepare': 'لديك 15 دقيقة للاستعداد.',
+      'time': 'وقت {prayer}',
+      'started': 'حان وقت الصلاة. اضغط للاستماع إلى الأذان.',
+      'tashreeq_title': 'تذكير: تكبيرات التشريق',
+      'tashreeq_body': 'لا تنسَ تكبيرات التشريق المباركة.',
+      'jumuah': 'جمعة مباركة',
+    },
+    'ur': {
+      'in_minutes': '{prayer} میں 15 منٹ باقی',
+      'prepare': 'تیاری کے لیے 15 منٹ باقی ہیں۔',
+      'time': '{prayer} کا وقت',
+      'started': 'نماز کا وقت ہو گیا۔ اذان سننے کے لیے ٹیپ کریں۔',
+      'tashreeq_title': 'یاد دہانی: تکبیرات تشریق',
+      'tashreeq_body': 'مبارک تشریق تکبیر مت بھولیں۔',
+      'jumuah': 'جمعہ مبارک',
+    },
+    'id': {
+      'in_minutes': '{prayer} 15 menit lagi',
+      'prepare': 'Anda memiliki 15 menit untuk bersiap.',
+      'time': 'Waktu {prayer}',
+      'started': 'Waktu sholat telah tiba. Ketuk untuk mendengarkan adzan.',
+      'tashreeq_title': 'Pengingat: Takbir Tasyrik',
+      'tashreeq_body': 'Jangan lupa takbir tasyrik yang diberkahi.',
+      'jumuah': 'Jumat Berkah',
+    },
+    'fr': {
+      'in_minutes': '{prayer} dans 15 minutes',
+      'prepare': 'Vous avez 15 minutes pour vous préparer.',
+      'time': 'Heure de {prayer}',
+      'started': 'L\'heure de la prière est arrivée. Appuyez pour écouter l\'adhan.',
+      'tashreeq_title': 'Rappel : Takbir al-Tachrik',
+      'tashreeq_body': 'N\'oubliez pas le takbir béni du Tachrik.',
+      'jumuah': 'Joumou\'a Moubarak',
+    },
+    'fa': {
+      'in_minutes': '{prayer} تا ۱۵ دقیقه دیگر',
+      'prepare': '۱۵ دقیقه برای آمادگی فرصت دارید.',
+      'time': 'وقت {prayer}',
+      'started': 'وقت نماز فرا رسیده است. برای شنیدن اذان لمس کنید.',
+      'tashreeq_title': 'یادآوری: تکبیرات تشریق',
+      'tashreeq_body': 'تکبیرات تشریق مبارک را فراموش نکنید.',
+      'jumuah': 'جمعه مبارک',
+    },
+  };
+
+  String _str(String locale, String key, {String? prayer}) {
+    final map = _strings[locale] ?? _strings['en']!;
+    final template = map[key] ?? _strings['en']![key] ?? key;
+    if (prayer != null) {
+      return template.replaceAll('{prayer}', prayer);
+    }
+    return template;
+  }
 
   final FlutterLocalNotificationsPlugin _plugin;
   static const String _pendingTapPayloadKey =
@@ -99,6 +174,9 @@ class NotificationService {
       return;
     }
 
+    final locale = settings.locale;
+    final names = _localizedPrayerNames[locale] ?? _localizedPrayerNames['en']!;
+
     final map = <PrayerType, DateTime>{
       PrayerType.fajr: times.fajr,
       PrayerType.sunrise: times.sunrise,
@@ -108,6 +186,7 @@ class NotificationService {
       PrayerType.isha: times.isha,
     };
     final hijri = _gregorianToHijri(times.date);
+    final isRamadan = hijri.month == 9;
 
     for (final entry in map.entries) {
       final mode =
@@ -116,15 +195,18 @@ class NotificationService {
               ? PrayerAlertMode.sound
               : PrayerAlertMode.off);
       if (mode != PrayerAlertMode.off) {
-        final prayerName = _notificationPrayerName(
+        final prayerName = _localizedNotificationPrayerName(
           prayerType: entry.key,
           prayerTime: entry.value,
+          names: names,
+          isRamadan: isRamadan,
+          locale: locale,
         );
         await scheduleSingleNotification(
           id: _notificationReminderIdFor(entry.key),
           scheduledTime: entry.value.subtract(const Duration(minutes: 15)),
-          title: '$prayerName in 15 minutes',
-          body: 'You have 15 minutes to prepare.',
+          title: _str(locale, 'in_minutes', prayer: prayerName),
+          body: _str(locale, 'prepare'),
           alertMode: mode,
           prayerType: entry.key,
           playAdhanOnTap: false,
@@ -132,8 +214,8 @@ class NotificationService {
         await scheduleSingleNotification(
           id: _notificationIdFor(entry.key),
           scheduledTime: entry.value,
-          title: '$prayerName time',
-          body: 'Prayer time has started. Tap to listen to the adhan.',
+          title: _str(locale, 'time', prayer: prayerName),
+          body: _str(locale, 'started'),
           alertMode: mode,
           prayerType: entry.key,
           playAdhanOnTap: true,
@@ -143,8 +225,8 @@ class NotificationService {
           await scheduleSingleNotification(
             id: _notificationTashreeqIdFor(entry.key),
             scheduledTime: entry.value.add(const Duration(minutes: 10)),
-            title: '✨ Reminder: Takbir al-Tashreeq ✨',
-            body: 'Do not forget the blessed Tashreeq takbir.',
+            title: '✨ ${_str(locale, 'tashreeq_title')} ✨',
+            body: _str(locale, 'tashreeq_body'),
             alertMode: mode,
             prayerType: entry.key,
             playAdhanOnTap: false,
@@ -153,7 +235,7 @@ class NotificationService {
       }
     }
 
-    await _scheduleJumuahMubarakNotification();
+    await _scheduleJumuahMubarakNotification(locale);
   }
 
   Future<void> scheduleSingleNotification({
@@ -356,7 +438,7 @@ class NotificationService {
     return prayerType != PrayerType.sunrise;
   }
 
-  Future<void> _scheduleJumuahMubarakNotification() async {
+  Future<void> _scheduleJumuahMubarakNotification(String locale) async {
     final now = tz.TZDateTime.now(tz.local);
     var target = tz.TZDateTime(tz.local, now.year, now.month, now.day, 10, 0);
     var daysUntilFriday = (DateTime.friday - now.weekday + 7) % 7;
@@ -385,7 +467,7 @@ class NotificationService {
 
     await _plugin.zonedSchedule(
       NotificationIds.jumuahMubarak,
-      '✨ Jumu\'ah Mubarak ✨',
+      '✨ ${_str(locale, 'jumuah')} ✨',
       '',
       target,
       details,
@@ -400,15 +482,44 @@ class NotificationService {
     return 'play_full_adhan:${prayerType.name}|$nonce';
   }
 
-  String _notificationPrayerName({
+  static const Map<String, Map<PrayerType, String>> _localizedPrayerNames = {
+    'en': {PrayerType.fajr: 'Fajr', PrayerType.sunrise: 'Sunrise', PrayerType.dhuhr: 'Dhuhr', PrayerType.asr: 'Asr', PrayerType.maghrib: 'Maghrib', PrayerType.isha: 'Isha'},
+    'tr': {PrayerType.fajr: 'Sabah', PrayerType.sunrise: 'Güneş', PrayerType.dhuhr: 'Öğle', PrayerType.asr: 'İkindi', PrayerType.maghrib: 'Akşam', PrayerType.isha: 'Yatsı'},
+    'ar': {PrayerType.fajr: 'الفجر', PrayerType.sunrise: 'الشروق', PrayerType.dhuhr: 'الظهر', PrayerType.asr: 'العصر', PrayerType.maghrib: 'المغرب', PrayerType.isha: 'العشاء'},
+    'ur': {PrayerType.fajr: 'فجر', PrayerType.sunrise: 'طلوع آفتاب', PrayerType.dhuhr: 'ظہر', PrayerType.asr: 'عصر', PrayerType.maghrib: 'مغرب', PrayerType.isha: 'عشاء'},
+    'id': {PrayerType.fajr: 'Subuh', PrayerType.sunrise: 'Terbit', PrayerType.dhuhr: 'Dzuhur', PrayerType.asr: 'Ashar', PrayerType.maghrib: 'Maghrib', PrayerType.isha: 'Isya'},
+    'fr': {PrayerType.fajr: 'Fajr', PrayerType.sunrise: 'Chourouk', PrayerType.dhuhr: 'Dohr', PrayerType.asr: 'Asr', PrayerType.maghrib: 'Maghrib', PrayerType.isha: 'Isha'},
+    'fa': {PrayerType.fajr: 'فجر', PrayerType.sunrise: 'طلوع آفتاب', PrayerType.dhuhr: 'ظهر', PrayerType.asr: 'عصر', PrayerType.maghrib: 'مغرب', PrayerType.isha: 'عشاء'},
+  };
+
+  static const Map<String, Map<String, String>> _specialNames = {
+    'en': {'jumuah': 'Jumu\'ah', 'iftar': 'Iftar', 'suhoor': 'Suhoor'},
+    'tr': {'jumuah': 'Cuma', 'iftar': 'İftar', 'suhoor': 'Sahur'},
+    'ar': {'jumuah': 'الجمعة', 'iftar': 'الإفطار', 'suhoor': 'السحور'},
+    'ur': {'jumuah': 'جمعہ', 'iftar': 'افطار', 'suhoor': 'سحری'},
+    'id': {'jumuah': 'Jumat', 'iftar': 'Buka Puasa', 'suhoor': 'Sahur'},
+    'fr': {'jumuah': 'Joumou\'a', 'iftar': 'Iftar', 'suhoor': 'Souhour'},
+    'fa': {'jumuah': 'جمعه', 'iftar': 'افطار', 'suhoor': 'سحر'},
+  };
+
+  String _localizedNotificationPrayerName({
     required PrayerType prayerType,
     required DateTime prayerTime,
+    required Map<PrayerType, String> names,
+    required bool isRamadan,
+    required String locale,
   }) {
-    if (prayerType == PrayerType.dhuhr &&
-        prayerTime.weekday == DateTime.friday) {
-      return 'Jumu\'ah';
+    final specials = _specialNames[locale] ?? _specialNames['en']!;
+    if (prayerType == PrayerType.dhuhr && prayerTime.weekday == DateTime.friday) {
+      return specials['jumuah'] ?? 'Jumu\'ah';
     }
-    return PrayerNames.en[prayerType] ?? prayerType.name;
+    if (isRamadan && prayerType == PrayerType.maghrib) {
+      return specials['iftar'] ?? 'Iftar';
+    }
+    if (isRamadan && prayerType == PrayerType.fajr) {
+      return specials['suhoor'] ?? 'Suhoor';
+    }
+    return names[prayerType] ?? prayerType.name;
   }
 
   static String? _parsePrayerNameFromPayload(String? payload) {

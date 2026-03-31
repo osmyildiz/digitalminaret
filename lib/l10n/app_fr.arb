@@ -153,6 +153,22 @@
 
   "language": "Langue",
 
+  "hijriMuharram": "Mouharram",
+  "hijriSafar": "Safar",
+  "hijriRabiAwwal": "Rabi al-Awwal",
+  "hijriRabiThani": "Rabi al-Thani",
+  "hijriJumadaAwwal": "Joumada al-Oula",
+  "hijriJumadaThani": "Joumada al-Thania",
+  "hijriRajab": "Rajab",
+  "hijriShaaban": "Chaabane",
+  "hijriRamadan": "Ramadan",
+  "hijriShawwal": "Chawwal",
+  "hijriDhuAlQadah": "Dhou al-Qi'da",
+  "hijriDhuAlHijjah": "Dhou al-Hijja",
+  "hijriDateFormat": "{day} {month} {year} H",
+  "eidAlFitr": "Prière de l'Aïd al-Fitr",
+  "eidAlAdha": "Prière de l'Aïd al-Adha",
+
   "qibla": "Qibla",
   "towardsTheQibla": "DIRECTION DE LA QIBLA",
   "compassNotAvailable": "Le capteur de boussole n'est pas disponible sur cet appareil.",

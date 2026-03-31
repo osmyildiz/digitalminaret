@@ -153,6 +153,22 @@
 
   "language": "زبان",
 
+  "hijriMuharram": "محرّم",
+  "hijriSafar": "صفر",
+  "hijriRabiAwwal": "ربیع‌الاول",
+  "hijriRabiThani": "ربیع‌الثانی",
+  "hijriJumadaAwwal": "جمادی‌الاول",
+  "hijriJumadaThani": "جمادی‌الثانی",
+  "hijriRajab": "رجب",
+  "hijriShaaban": "شعبان",
+  "hijriRamadan": "رمضان",
+  "hijriShawwal": "شوال",
+  "hijriDhuAlQadah": "ذوالقعده",
+  "hijriDhuAlHijjah": "ذوالحجه",
+  "hijriDateFormat": "{day} {month} {year} هـ.ق",
+  "eidAlFitr": "نماز عید فطر",
+  "eidAlAdha": "نماز عید قربان",
+
   "qibla": "قبله",
   "towardsTheQibla": "جهت قبله",
   "compassNotAvailable": "حسگر قطب‌نما در این دستگاه موجود نیست.",

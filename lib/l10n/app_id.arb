@@ -153,6 +153,22 @@
 
   "language": "Bahasa",
 
+  "hijriMuharram": "Muharram",
+  "hijriSafar": "Safar",
+  "hijriRabiAwwal": "Rabiul Awal",
+  "hijriRabiThani": "Rabiul Akhir",
+  "hijriJumadaAwwal": "Jumadil Awal",
+  "hijriJumadaThani": "Jumadil Akhir",
+  "hijriRajab": "Rajab",
+  "hijriShaaban": "Syakban",
+  "hijriRamadan": "Ramadhan",
+  "hijriShawwal": "Syawal",
+  "hijriDhuAlQadah": "Dzulkaidah",
+  "hijriDhuAlHijjah": "Dzulhijjah",
+  "hijriDateFormat": "{day} {month} {year} H",
+  "eidAlFitr": "Shalat Idul Fitri",
+  "eidAlAdha": "Shalat Idul Adha",
+
   "qibla": "Kiblat",
   "towardsTheQibla": "ARAH KIBLAT",
   "compassNotAvailable": "Sensor kompas tidak tersedia di perangkat ini.",

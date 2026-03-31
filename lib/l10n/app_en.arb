@@ -193,6 +193,29 @@
 
   "language": "Language",
 
+  "hijriMuharram": "Muharram",
+  "hijriSafar": "Safar",
+  "hijriRabiAwwal": "Rabi al-Awwal",
+  "hijriRabiThani": "Rabi al-Thani",
+  "hijriJumadaAwwal": "Jumada al-Awwal",
+  "hijriJumadaThani": "Jumada al-Thani",
+  "hijriRajab": "Rajab",
+  "hijriShaaban": "Shaaban",
+  "hijriRamadan": "Ramadan",
+  "hijriShawwal": "Shawwal",
+  "hijriDhuAlQadah": "Dhu al-Qadah",
+  "hijriDhuAlHijjah": "Dhu al-Hijjah",
+  "hijriDateFormat": "{day} {month} {year} AH",
+  "@hijriDateFormat": {
+    "placeholders": {
+      "day": {"type": "String"},
+      "month": {"type": "String"},
+      "year": {"type": "String"}
+    }
+  },
+  "eidAlFitr": "Eid al-Fitr Prayer",
+  "eidAlAdha": "Eid al-Adha Prayer",
+
   "qibla": "Qibla",
   "towardsTheQibla": "TOWARDS THE QIBLA",
   "compassNotAvailable": "Compass sensor not available on this device.",

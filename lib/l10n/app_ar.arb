@@ -153,6 +153,22 @@
 
   "language": "اللغة",
 
+  "hijriMuharram": "محرّم",
+  "hijriSafar": "صفر",
+  "hijriRabiAwwal": "ربيع الأول",
+  "hijriRabiThani": "ربيع الثاني",
+  "hijriJumadaAwwal": "جمادى الأولى",
+  "hijriJumadaThani": "جمادى الآخرة",
+  "hijriRajab": "رجب",
+  "hijriShaaban": "شعبان",
+  "hijriRamadan": "رمضان",
+  "hijriShawwal": "شوّال",
+  "hijriDhuAlQadah": "ذو القعدة",
+  "hijriDhuAlHijjah": "ذو الحجة",
+  "hijriDateFormat": "{day} {month} {year} هـ",
+  "eidAlFitr": "صلاة عيد الفطر",
+  "eidAlAdha": "صلاة عيد الأضحى",
+
   "qibla": "القبلة",
   "towardsTheQibla": "اتجاه القبلة",
   "compassNotAvailable": "مستشعر البوصلة غير متوفر على هذا الجهاز.",

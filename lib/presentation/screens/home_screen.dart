@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final isJumuahActive =
         now.weekday == DateTime.friday &&
         model.activePrayer == PrayerType.dhuhr;
-    final eidLabel = widget.seasonRulesService.eidPrayerLabel(now);
+    final eidLabel = _localizedEidLabel(context, now);
     final eidPrayerTime = DateFormat(
       'h:mm a',
     ).format(prayerTimes.sunrise.add(const Duration(minutes: 45)));
@@ -501,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                           const Spacer(),
                           Text(
-                            widget.seasonRulesService.hijriDateText(now),
+                            _localizedHijriDate(context, now),
                             style: GoogleFonts.cinzel(
                               color: palette.bottomDateColor,
                               fontSize: 16,
@@ -1362,6 +1362,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       case PrayerType.isha:
         return 'عشاء';
     }
+  }
+
+  String _localizedHijriDate(BuildContext context, DateTime date) {
+    final l = AppLocalizations.of(context)!;
+    final h = widget.seasonRulesService.toHijri(date);
+    final monthNames = [
+      l.hijriMuharram, l.hijriSafar, l.hijriRabiAwwal, l.hijriRabiThani,
+      l.hijriJumadaAwwal, l.hijriJumadaThani, l.hijriRajab, l.hijriShaaban,
+      l.hijriRamadan, l.hijriShawwal, l.hijriDhuAlQadah, l.hijriDhuAlHijjah,
+    ];
+    final monthName = monthNames[h.month - 1];
+    return l.hijriDateFormat(h.day.toString(), monthName, h.year.toString());
+  }
+
+  String? _localizedEidLabel(BuildContext context, DateTime date) {
+    final l = AppLocalizations.of(context)!;
+    final h = widget.seasonRulesService.toHijri(date);
+    if (h.month == 10 && h.day == 1) return l.eidAlFitr;
+    if (h.month == 12 && h.day == 10) return l.eidAlAdha;
+    return null;
   }
 
   IconData _iconByPrayer(PrayerType type) {
