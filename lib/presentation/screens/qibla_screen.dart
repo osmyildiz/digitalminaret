@@ -7,7 +7,6 @@ import 'package:adhan/adhan.dart' as adhan;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_islamic_icons/flutter_islamic_icons.dart';
 import 'package:flutter_qiblah/flutter_qiblah.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -333,61 +332,21 @@ class _QiblaScreenState extends State<QiblaScreen>
                         painter: _CompassDialPainter(palette: palette),
                       ),
                     ),
-                    // 2. Green Qibla needle + Kaaba at tip
+                    // 2. Green Qibla needle (no icon at tip)
                     Transform.rotate(
                       angle: qiblaNeedleRotation,
-                      child: SizedBox(
-                        width: 300,
-                        height: 300,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CustomPaint(
-                              size: const Size(300, 300),
-                              painter: _QiblaNeedlePainter(),
-                            ),
-                            // Kaaba icon at the tip of the needle
-                            Positioned(
-                              top: 6,
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF2E7D32),
-                                  border: Border.all(
-                                    color: const Color(0xFF81C784),
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
-                                      blurRadius: 12,
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  FlutterIslamicIcons.solidQibla,
-                                  color: Color(0xFFFFD98F),
-                                  size: 22,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: CustomPaint(
+                        size: const Size(300, 300),
+                        painter: _QiblaNeedlePainter(),
                       ),
                     ),
-                    // Center dot
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: palette.compassBgColor,
-                        border: Border.all(
-                          color: palette.compassRingColor.withValues(alpha: 0.6),
-                          width: 2,
-                        ),
+                    // 3. Kaaba image at center
+                    ClipOval(
+                      child: Image.asset(
+                        'assets/images/kaaba.png',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ],
@@ -817,60 +776,21 @@ class _StaticQiblaFallback extends StatelessWidget {
                   size: const Size(300, 300),
                   painter: _CompassDialPainter(palette: palette),
                 ),
-                // 2. Green needle + Kaaba at tip (static)
+                // 2. Green needle (static)
                 Transform.rotate(
                   angle: qiblaAngle * (math.pi / 180),
-                  child: SizedBox(
-                    width: 300,
-                    height: 300,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        const CustomPaint(
-                          size: Size(300, 300),
-                          painter: _QiblaNeedlePainter(),
-                        ),
-                        Positioned(
-                          top: 6,
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFF2E7D32),
-                              border: Border.all(
-                                color: const Color(0xFF81C784),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
-                                  blurRadius: 12,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              FlutterIslamicIcons.solidQibla,
-                              color: Color(0xFFFFD98F),
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: const CustomPaint(
+                    size: Size(300, 300),
+                    painter: _QiblaNeedlePainter(),
                   ),
                 ),
-                // Center dot
-                Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: palette.compassBgColor,
-                    border: Border.all(
-                      color: palette.compassRingColor.withValues(alpha: 0.6),
-                      width: 2,
-                    ),
+                // 3. Kaaba image at center
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/kaaba.png',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ],
