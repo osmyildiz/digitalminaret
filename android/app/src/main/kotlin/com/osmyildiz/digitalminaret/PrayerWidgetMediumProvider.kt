@@ -9,7 +9,7 @@ import android.graphics.Color
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetProvider
 
-class PrayerWidgetProvider : HomeWidgetProvider() {
+class PrayerWidgetMediumProvider : HomeWidgetProvider() {
 
     private val nameViewIds = mapOf(
         "fajr" to R.id.widget_fajr_name,
@@ -39,10 +39,8 @@ class PrayerWidgetProvider : HomeWidgetProvider() {
         val muted = Color.parseColor("#B8D2DAF3")
 
         appWidgetIds.forEach { appWidgetId ->
-            val views = RemoteViews(context.packageName, R.layout.prayer_widget)
+            val views = RemoteViews(context.packageName, R.layout.prayer_widget_medium)
 
-            views.setTextViewText(R.id.widget_location, state.location)
-            views.setTextViewText(R.id.widget_active_arabic, WidgetData.arabicNameFor(state.activeKey))
             views.setTextViewText(R.id.widget_active_prayer, state.activeName.uppercase())
             views.setTextViewText(R.id.widget_active_time, WidgetData.formatTime(state.activeTime))
             views.setTextViewText(R.id.widget_remaining, state.remaining)
@@ -53,7 +51,7 @@ class PrayerWidgetProvider : HomeWidgetProvider() {
                 val nameId = nameViewIds[item.key] ?: continue
                 val timeId = timeViewIds[item.key] ?: continue
 
-                views.setTextViewText(nameId, item.localizedName.uppercase())
+                views.setTextViewText(nameId, item.localizedName.take(5).uppercase())
                 views.setTextViewText(timeId, WidgetData.formatTime(item.time))
 
                 val active = item.localizedName.equals(state.activeName, ignoreCase = true)

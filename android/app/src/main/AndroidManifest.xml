@@ -2,6 +2,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:label="digitalminaret"
         android:name="${applicationName}"
@@ -34,15 +43,53 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- Home-screen widgets -->
+        <receiver
+            android:name=".PrayerWidgetSmallProvider"
+            android:exported="true"
+            android:label="Digital Minaret — Small">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_small_info" />
+        </receiver>
+
+        <receiver
+            android:name=".PrayerWidgetMediumProvider"
+            android:exported="true"
+            android:label="Digital Minaret — Medium">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_medium_info" />
+        </receiver>
+
         <receiver
             android:name=".PrayerWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:label="Digital Minaret — Large">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/prayer_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".PrayerWidgetXLargeProvider"
+            android:exported="true"
+            android:label="Digital Minaret — XL">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_xlarge_info" />
         </receiver>
     </application>
     <!-- Required to query activities that can process text, see:

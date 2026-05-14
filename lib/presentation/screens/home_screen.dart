@@ -375,8 +375,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           Text(
                             activePrayerTime,
                             style: GoogleFonts.manrope(
-                              color: primaryTextColor,
-                              fontSize: 38,
+                              color: primaryTextColor.withValues(alpha: 0.78),
+                              fontSize: 24,
                               fontWeight: isDayTime
                                   ? FontWeight.w500
                                   : FontWeight.w300,
@@ -384,63 +384,92 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           if (isJumuahActive) const SizedBox(height: 4),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 12),
+                          // Hero countdown — primary user-facing element.
+                          // Color escalates as deadline approaches:
+                          //   < 15 min → warm orange, < 5 min → red.
+                          Builder(
+                            builder: (_) {
+                              final remaining = model.timeUntilNext.isNegative
+                                  ? Duration.zero
+                                  : model.timeUntilNext;
+                              final urgent = remaining.inMinutes < 5;
+                              final warn =
+                                  !urgent && remaining.inMinutes < 15;
+                              final countdownColor = urgent
+                                  ? const Color(0xFFE85A5A)
+                                  : warn
+                                      ? const Color(0xFFFFA552)
+                                      : accentColor;
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _durationText(remaining),
+                                    style: GoogleFonts.manrope(
+                                      color: countdownColor,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 2,
+                                      height: 1,
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                      shadows: [
+                                        Shadow(
+                                          color: countdownColor.withValues(
+                                            alpha: 0.45,
+                                          ),
+                                          blurRadius: 14,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: 200,
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(999),
+                                      child: Stack(
+                                        children: [
+                                          Container(
+                                            height: 5,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.12),
+                                          ),
+                                          FractionallySizedBox(
+                                            widthFactor: phaseProgress,
+                                            child: Container(
+                                              height: 5,
+                                              decoration: BoxDecoration(
+                                                color: countdownColor,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: countdownColor
+                                                        .withValues(
+                                                          alpha: 0.55,
+                                                        ),
+                                                    blurRadius: 6,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
                           SizedBox(
-                            width: 176,
+                            width: 240,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Container(
-                                      height: 10,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.11,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          999,
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: FractionallySizedBox(
-                                        widthFactor: phaseProgress,
-                                        child: Container(
-                                          height: 10,
-                                          decoration: BoxDecoration(
-                                            color: accentColor,
-                                            borderRadius: BorderRadius.circular(
-                                              999,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: accentColor.withValues(
-                                                  alpha: 0.5,
-                                                ),
-                                                blurRadius: 8,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      _durationText(model.timeUntilNext),
-                                      style: GoogleFonts.manrope(
-                                        color: isDayTime
-                                            ? primaryTextColor
-                                            : Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
                                 SizedBox(
                                   width: double.infinity,
                                   child: FittedBox(

@@ -68,4 +68,9 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Wear OS Data Layer — used to push prayer-time snapshots from the
+    // phone to the paired watch. No-op when no watch is paired.
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    // Coroutines for off-main Wear push.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }

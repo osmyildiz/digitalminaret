@@ -2,8 +2,19 @@ import 'package:home_widget/home_widget.dart';
 
 import '../../core/enums/prayer_type.dart';
 import '../models/prayer_times_model.dart';
+import 'live_activity_service.dart';
+import 'wear_sync_service.dart';
 
 class WidgetService {
+  WidgetService({
+    LiveActivityService? liveActivityService,
+    WearSyncService? wearSyncService,
+  })  : _liveActivityService = liveActivityService ?? LiveActivityService(),
+        _wearSyncService = wearSyncService ?? WearSyncService();
+
+  final LiveActivityService _liveActivityService;
+  final WearSyncService _wearSyncService;
+
   static const String _appGroupId = 'group.com.osmyildiz.digitalminaret';
   static const String _iosWidgetKind = 'PrayerWidget';
 
@@ -129,6 +140,51 @@ class WidgetService {
       },
       locale: locale,
     );
+
+    // Push the same snapshot to the iOS Live Activity (no-op elsewhere).
+    // Activity countdown auto-ticks via SwiftUI's Text(timerInterval:),
+    // so we only need to push when the active/next prayer flips —
+    // i.e. each time prayer times are recomputed.
+    await _liveActivityService.startOrUpdate(
+      times: times,
+      activePrayer: current.key,
+      activePrayerTime: previousPrayerTime,
+      nextPrayer: next.key,
+      nextPrayerTime: next.value,
+      activePrayerLocalized: names[current.key] ?? current.key.name,
+      nextPrayerLocalized: names[next.key] ?? next.key.name,
+      activePrayerArabic: _arabicByPrayer(current.key, previousPrayerTime),
+    );
+
+    // Push to paired Wear OS device — Android-only, silent no-op
+    // if no watch is paired or Play Services is missing.
+    await _wearSyncService.push(
+      location: times.locationName,
+      epochsByPrayerKey: {
+        for (final entry in map.entries)
+          entry.key.name: entry.value.millisecondsSinceEpoch,
+      },
+      namesByPrayerKey: {
+        for (final entry in map.entries)
+          entry.key.name: names[entry.key] ?? entry.key.name,
+      },
+    );
+  }
+
+  static const Map<PrayerType, String> _arabicNames = {
+    PrayerType.fajr: 'فجر',
+    PrayerType.sunrise: 'شروق',
+    PrayerType.dhuhr: 'ظهر',
+    PrayerType.asr: 'عصر',
+    PrayerType.maghrib: 'مغرب',
+    PrayerType.isha: 'عشاء',
+  };
+
+  String _arabicByPrayer(PrayerType type, DateTime time) {
+    if (type == PrayerType.dhuhr && time.weekday == DateTime.friday) {
+      return 'جمعة';
+    }
+    return _arabicNames[type] ?? '';
   }
 
   Future<void> sendDataToWidget({
@@ -189,6 +245,9 @@ class WidgetService {
       name: 'PrayerWidgetProvider',
       iOSName: _iosWidgetKind,
     );
+    await HomeWidget.updateWidget(androidName: 'PrayerWidgetSmallProvider');
+    await HomeWidget.updateWidget(androidName: 'PrayerWidgetMediumProvider');
+    await HomeWidget.updateWidget(androidName: 'PrayerWidgetXLargeProvider');
   }
 
   String _durationText(Duration d) {

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_bg">
+
+    <!-- Header: location + hijri date -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Digital Minaret"
+            android:textColor="#B8D2DAF3"
+            android:textSize="13sp"
+            android:fontFamily="@font/manrope_variable"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_hijri_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="14 Shawwal"
+            android:textColor="#B8D2DAF3"
+            android:textSize="13sp"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/widget_divider" />
+
+    <!-- Vertical timeline (6 prayers incl. sunrise) -->
+    <LinearLayout
+        android:id="@+id/row_fajr"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/dot_fajr"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/widget_dot_inactive"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/name_fajr"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="FAJR"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/cinzel_variable" />
+
+        <TextView
+            android:id="@+id/time_fajr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5:31 AM"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_sunrise"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/dot_sunrise"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/widget_dot_inactive"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/name_sunrise"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="SUNRISE"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/cinzel_variable" />
+
+        <TextView
+            android:id="@+id/time_sunrise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="6:48 AM"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_dhuhr"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/dot_dhuhr"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/widget_dot_inactive"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/name_dhuhr"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="DHUHR"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/cinzel_variable" />
+
+        <TextView
+            android:id="@+id/time_dhuhr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:45 PM"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_asr"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/dot_asr"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/widget_dot_inactive"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/name_asr"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="ASR"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/cinzel_variable" />
+
+        <TextView
+            android:id="@+id/time_asr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4:19 PM"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_maghrib"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/dot_maghrib"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/widget_dot_inactive"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/name_maghrib"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="MAGHRIB"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/cinzel_variable" />
+
+        <TextView
+            android:id="@+id/time_maghrib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="7:04 PM"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_isha"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/dot_isha"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@drawable/widget_dot_inactive"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/name_isha"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="ISHA"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/cinzel_variable" />
+
+        <TextView
+            android:id="@+id/time_isha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="8:23 PM"
+            android:textColor="#B8D2DAF3"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/manrope_variable" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/widget_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="12dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/widget_progress" />
+
+</LinearLayout>

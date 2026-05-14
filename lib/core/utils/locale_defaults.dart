@@ -75,6 +75,23 @@ class LocaleDefaults {
       case 'CI':
       case 'GN':
         return CalculationMethod.muslimWorldLeague;
+      // Japan, Korea, China, Taiwan, Mongolia, Russia and most non-Muslim
+      // East/North Asia default to Muslim World League — the method most
+      // commonly used by the Japan Muslim Association, Tokyo Camii and
+      // similar communities in the region.
+      case 'JP':
+      case 'KR':
+      case 'CN':
+      case 'TW':
+      case 'HK':
+      case 'MN':
+      case 'RU':
+      case 'KZ':
+      case 'UZ':
+      case 'KG':
+      case 'TM':
+      case 'AZ':
+        return CalculationMethod.muslimWorldLeague;
     }
 
     // Language-based fallback

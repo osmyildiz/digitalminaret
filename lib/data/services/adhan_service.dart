@@ -15,6 +15,14 @@ class AdhanService {
   }) {
     final params = _mapMethod(method);
     params.madhab = _mapMadhab(madhab);
+    // High-latitude rule: at |lat| >= ~48° (Sapporo, Stockholm, Helsinki,
+    // Anchorage, north of Germany, etc.) Fajr/Isha angles can fail to reach
+    // the horizon in summer, producing missing or absurd prayer times.
+    // Middle-of-the-night ("gece yarısı") is the conservative scholarly
+    // default and matches the package default; we set it explicitly so the
+    // intent is visible and overridable later if the user wants to switch
+    // to seventh-of-the-night or twilight-angle.
+    params.highLatitudeRule = adhan.HighLatitudeRule.middle_of_the_night;
     final prayerTimes = adhan.PrayerTimes(
       adhan.Coordinates(latitude, longitude),
       adhan.DateComponents.from(date),
