@@ -15,6 +15,7 @@ class SettingsModel {
     required this.enabledPrayers,
     required this.prayerAlertModes,
     this.locale = 'en',
+    this.liveActivityEnabled = true,
   });
 
   final CalculationMethod calculationMethod;
@@ -26,6 +27,9 @@ class SettingsModel {
   final Map<PrayerType, bool> enabledPrayers;
   final Map<PrayerType, PrayerAlertMode> prayerAlertModes;
   final String locale;
+  /// Lock-screen / Dynamic Island live timeline (iOS Live Activity,
+  /// Android ongoing notification). User-toggleable.
+  final bool liveActivityEnabled;
 
   factory SettingsModel.defaults() {
     return const SettingsModel(
@@ -69,6 +73,7 @@ class SettingsModel {
         (key, value) => MapEntry(key.name, value.name),
       ),
       'locale': locale,
+      'liveActivityEnabled': liveActivityEnabled,
     };
   }
 
@@ -104,6 +109,7 @@ class SettingsModel {
           ),
       },
       locale: json['locale'] as String? ?? 'en',
+      liveActivityEnabled: json['liveActivityEnabled'] as bool? ?? true,
     );
   }
 
@@ -117,6 +123,7 @@ class SettingsModel {
     Map<PrayerType, bool>? enabledPrayers,
     Map<PrayerType, PrayerAlertMode>? prayerAlertModes,
     String? locale,
+    bool? liveActivityEnabled,
   }) {
     return SettingsModel(
       calculationMethod: calculationMethod ?? this.calculationMethod,
@@ -128,6 +135,7 @@ class SettingsModel {
       enabledPrayers: enabledPrayers ?? this.enabledPrayers,
       prayerAlertModes: prayerAlertModes ?? this.prayerAlertModes,
       locale: locale ?? this.locale,
+      liveActivityEnabled: liveActivityEnabled ?? this.liveActivityEnabled,
     );
   }
 

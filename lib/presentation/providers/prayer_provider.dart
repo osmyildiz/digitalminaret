@@ -28,9 +28,14 @@ class PrayerProvider extends ChangeNotifier {
   Duration? get timeUntilNext => _timeUntilNext;
 
   String _locale = 'en';
+  bool _liveActivityEnabled = true;
 
   void setLocale(String locale) {
     _locale = locale;
+  }
+
+  void setLiveActivityEnabled(bool enabled) {
+    _liveActivityEnabled = enabled;
   }
 
   Future<void> loadPrayerTimes() async {
@@ -39,7 +44,11 @@ class PrayerProvider extends ChangeNotifier {
     final times = _prayerTimes;
     if (times != null) {
       try {
-        await _widgetService.updateWidget(times, locale: _locale);
+        await _widgetService.updateWidget(
+          times,
+          locale: _locale,
+          liveActivityEnabled: _liveActivityEnabled,
+        );
       } catch (error) {
         // Widget update must not block core app flow.
         debugPrint('[PrayerProvider] widget update skipped: $error');

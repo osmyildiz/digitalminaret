@@ -37,7 +37,11 @@ class _FakePackGateway implements AdhanPackDownloadGateway {
 
 class _NoopWidgetService extends WidgetService {
   @override
-  Future<void> updateWidget(PrayerTimesModel times, {String locale = 'en'}) async {}
+  Future<void> updateWidget(
+    PrayerTimesModel times, {
+    String locale = 'en',
+    bool liveActivityEnabled = true,
+  }) async {}
 }
 
 void main() {

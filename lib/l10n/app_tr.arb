@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "Bildirime dokunulduğunda tam ezan",
   "playDuaAfterAdhan": "Ezandan sonra dua çal",
+  "lockScreenTimeline": "Kilit ekranı vakit çizelgesi",
   "adhanPackLabel": "Ezan Paketi: {packName}",
   "adhanPacks": "Ezan Paketleri",
   "downloadAdhanPack": "Ezan Paketi İndir",

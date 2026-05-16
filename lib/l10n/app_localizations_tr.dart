@@ -210,6 +210,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get playDuaAfterAdhan => 'Ezandan sonra dua çal';
 
   @override
+  String get lockScreenTimeline => 'Kilit ekranı vakit çizelgesi';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'Ezan Paketi: $packName';
   }

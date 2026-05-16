@@ -23,25 +23,30 @@ struct PrayerLiveActivity: Widget {
                 .activityBackgroundTint(Color.black.opacity(0.001))
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
-            DynamicIsland {
+            // Schedule-derived so the island self-advances when a
+            // prayer passes (matches the lock-screen behaviour).
+            let active = scheduleActive(context.state)
+            let nextUp = scheduleNext(context.state)
+            return DynamicIsland {
                 // Expanded UI
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(context.state.activePrayer.uppercased())
+                        Text(active.name.uppercased())
                             .font(.caption2.weight(.bold))
                             .foregroundColor(LATheme.gold)
-                        Text(formatTime(context.state.activePrayerTime))
+                        Text(formatTime(active.time))
                             .font(.title3.weight(.bold))
                             .foregroundColor(.white)
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(context.state.nextPrayer.uppercased())
+                        Text(nextUp.name.uppercased())
                             .font(.caption2.weight(.semibold))
                             .foregroundColor(.white.opacity(0.7))
                         Text(
-                            timerInterval: Date()...context.state.nextPrayerTime,
+                            timerInterval: Date()...max(nextUp.time,
+                                Date().addingTimeInterval(1)),
                             countsDown: true,
                             showsHours: true
                         )
@@ -57,21 +62,24 @@ struct PrayerLiveActivity: Widget {
                         .foregroundColor(.white.opacity(0.55))
                 }
             } compactLeading: {
-                Text(context.state.activePrayer.prefix(3).uppercased())
+                Text(active.name.prefix(3).uppercased())
                     .font(.caption2.weight(.bold))
                     .foregroundColor(LATheme.gold)
             } compactTrailing: {
+                // H:MM:SS (showsHours:true) per request — wider frame
+                // so the hour digit isn't clipped in the pill.
                 Text(
-                    timerInterval: Date()...context.state.nextPrayerTime,
+                    timerInterval: Date()...max(nextUp.time,
+                        Date().addingTimeInterval(1)),
                     countsDown: true,
-                    showsHours: false
+                    showsHours: true
                 )
                 .monospacedDigit()
                 .font(.caption2.weight(.bold))
                 .foregroundColor(.white)
-                .frame(maxWidth: 50)
+                .frame(maxWidth: 68)
             } minimal: {
-                Text(context.state.activePrayer.prefix(1).uppercased())
+                Text(active.name.prefix(1).uppercased())
                     .font(.caption2.weight(.bold))
                     .foregroundColor(LATheme.gold)
             }
@@ -113,36 +121,49 @@ private struct PhasePalette {
     }
 }
 
+/// Schedule-derived "next prayer" so the activity self-advances even
+/// while the phone is locked (iOS re-renders periodically; the lookup
+/// then returns the new target and the countdown flips automatically).
+@available(iOS 16.1, *)
+func scheduleNext(_ s: PrayerActivityAttributes.ContentState)
+    -> (name: String, time: Date) {
+    let now = Date()
+    let stops = s.schedule.sorted { $0.time < $1.time }
+    if let up = stops.first(where: { $0.time > now }) {
+        return (up.name, up.time)
+    }
+    if let first = stops.first {
+        return (first.name, first.time.addingTimeInterval(86_400))
+    }
+    return (s.nextPrayer, s.nextPrayerTime)
+}
+
+/// Schedule-derived "current/active prayer" (latest stop already
+/// reached). Mirrors scheduleNext so the displayed active name stays
+/// correct after a prayer passes without an app push.
+@available(iOS 16.1, *)
+func scheduleActive(_ s: PrayerActivityAttributes.ContentState)
+    -> (name: String, time: Date) {
+    let now = Date()
+    let stops = s.schedule.sorted { $0.time < $1.time }
+    if let cur = stops.last(where: { $0.time <= now }) {
+        return (cur.name, cur.time)
+    }
+    // Before the day's first prayer → yesterday's last (Isha -1d).
+    if let last = stops.last {
+        return (last.name, last.time.addingTimeInterval(-86_400))
+    }
+    return (s.activePrayer, s.activePrayerTime)
+}
+
 @available(iOS 16.1, *)
 private struct LockScreenView: View {
     let state: PrayerActivityAttributes.ContentState
 
-    /// Derives the upcoming prayer from the full schedule + current
-    /// time, instead of trusting the static nextPrayer fields. This is
-    /// what makes the activity self-advance to the next prayer the
-    /// moment one passes — even while the phone is locked and the app
-    /// can't push an update. (iOS re-renders the Live Activity
-    /// periodically; on the next render the schedule lookup returns the
-    /// new target so the countdown flips automatically.)
-    private func currentNext()
-        -> (name: String, time: Date) {
-        let now = Date()
-        let stops = state.schedule.sorted { $0.time < $1.time }
-        if let upcoming = stops.first(where: { $0.time > now }) {
-            return (upcoming.name, upcoming.time)
-        }
-        // Past the last prayer (Isha) → tomorrow's first (Fajr +1d).
-        if let first = stops.first {
-            return (first.name,
-                    first.time.addingTimeInterval(86_400))
-        }
-        // No schedule → fall back to the static fields.
-        return (state.nextPrayer, state.nextPrayerTime)
-    }
-
     var body: some View {
         let palette = PhasePalette.resolve(for: state.activePrayerArabic)
-        let nextUp = currentNext()
+        let nextUp = scheduleNext(state)
+        let active = scheduleActive(state)
 
         ZStack {
             LinearGradient(
@@ -168,11 +189,24 @@ private struct LockScreenView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 6)
 
-                // Full-day proportional timeline: prayer names above
-                // their nodes, segment lengths = real time gaps,
-                // elapsed = thick bright white, remaining = faint white.
+                // Active (current) prayer — the headline. Bigger,
+                // above the timeline so the user instantly sees which
+                // prayer they're in. Schedule-derived so it stays
+                // correct after a prayer passes while locked.
+                Text(active.name.uppercased())
+                    .font(.custom("Cinzel", size: 19).weight(.bold))
+                    .foregroundColor(palette.accent)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+
+                Spacer(minLength: 6)
+
+                // Full-day proportional timeline (nodes only, no labels;
+                // segment lengths = real time gaps, elapsed = bright).
                 DayTimelineView(
                     schedule: state.schedule,
                     activeTime: state.activePrayerTime,
@@ -181,7 +215,7 @@ private struct LockScreenView: View {
                 )
                 .frame(height: 26)
                 .padding(.horizontal, 18)
-                .padding(.top, 6)
+                .padding(.top, 4)
 
                 Spacer(minLength: 8)
 

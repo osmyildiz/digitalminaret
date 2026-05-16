@@ -212,6 +212,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get playDuaAfterAdhan => 'Putar doa setelah adzan';
 
   @override
+  String get lockScreenTimeline => 'Lock screen prayer timeline';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'Paket Adzan: $packName';
   }

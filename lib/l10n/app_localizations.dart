@@ -500,6 +500,12 @@ abstract class AppLocalizations {
   /// **'Play dua after adhan'**
   String get playDuaAfterAdhan;
 
+  /// No description provided for @lockScreenTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock screen prayer timeline'**
+  String get lockScreenTimeline;
+
   /// No description provided for @adhanPackLabel.
   ///
   /// In en, this message translates to:

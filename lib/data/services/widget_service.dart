@@ -92,6 +92,10 @@ class WidgetService {
   Future<void> updateWidget(
     PrayerTimesModel times, {
     String locale = 'en',
+    // When false the user has turned off the lock-screen / Dynamic
+    // Island timeline (iOS Live Activity + Android ongoing
+    // notification); we tear it down instead of pushing an update.
+    bool liveActivityEnabled = true,
   }) async {
     final map = <PrayerType, DateTime>{
       PrayerType.fajr: times.fajr.toLocal(),
@@ -166,17 +170,23 @@ class WidgetService {
         },
     ];
 
-    await _liveActivityService.startOrUpdate(
-      times: times,
-      activePrayer: current.key,
-      activePrayerTime: previousPrayerTime,
-      nextPrayer: next.key,
-      nextPrayerTime: next.value,
-      activePrayerLocalized: names[current.key] ?? current.key.name,
-      nextPrayerLocalized: names[next.key] ?? next.key.name,
-      activePrayerArabic: _arabicByPrayer(current.key, previousPrayerTime),
-      schedule: schedule,
-    );
+    if (liveActivityEnabled) {
+      await _liveActivityService.startOrUpdate(
+        times: times,
+        activePrayer: current.key,
+        activePrayerTime: previousPrayerTime,
+        nextPrayer: next.key,
+        nextPrayerTime: next.value,
+        activePrayerLocalized: names[current.key] ?? current.key.name,
+        nextPrayerLocalized: names[next.key] ?? next.key.name,
+        activePrayerArabic: _arabicByPrayer(current.key, previousPrayerTime),
+        schedule: schedule,
+      );
+    } else {
+      // User disabled the lock-screen timeline → tear down any
+      // running Live Activity / Android ongoing notification.
+      await _liveActivityService.end();
+    }
 
     // Push to paired Wear OS device — Android-only, silent no-op
     // if no watch is paired or Play Services is missing.

@@ -595,7 +595,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       prayerProvider.setLocale(selectedLocale);
       final times = prayerProvider.prayerTimes;
       if (times != null) {
-        await WidgetService().updateWidget(times, locale: selectedLocale);
+        await WidgetService().updateWidget(
+          times,
+          locale: selectedLocale,
+          liveActivityEnabled: provider.settings.liveActivityEnabled,
+        );
         await _syncNotifications();
       }
     }
@@ -1298,6 +1302,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     postAdhanDuaEnabled: value,
                                   ),
                                 );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: palette.actionBg,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: palette.actionBorder),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.timeline_rounded,
+                              color: palette.primaryText,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(context)!
+                                    .lockScreenTimeline,
+                                style: TextStyle(
+                                  color: palette.primaryText,
+                                ),
+                              ),
+                            ),
+                            PremiumSwitch(
+                              value: settings.liveActivityEnabled,
+                              onChanged: (value) async {
+                                // Capture provider before any await so
+                                // we don't touch context across the gap.
+                                final pp = context.read<PrayerProvider>();
+                                await provider.saveSettings(
+                                  settings.copyWith(
+                                    liveActivityEnabled: value,
+                                  ),
+                                );
+                                // Apply immediately: start or tear down
+                                // the lock-screen timeline right now.
+                                pp.setLiveActivityEnabled(value);
+                                final t = pp.prayerTimes;
+                                if (t != null) {
+                                  await WidgetService().updateWidget(
+                                    t,
+                                    locale: settings.locale,
+                                    liveActivityEnabled: value,
+                                  );
+                                }
                               },
                             ),
                           ],

@@ -55,6 +55,9 @@ class _SplashScreenState extends State<SplashScreen> {
       await locationProvider.loadLocation();
       if (locationProvider.location != null) {
         prayerProvider.setLocale(settingsProvider.settings.locale);
+        prayerProvider.setLiveActivityEnabled(
+          settingsProvider.settings.liveActivityEnabled,
+        );
         await prayerProvider.loadPrayerTimes();
         prayerProvider.startCountdown();
         final times = prayerProvider.prayerTimes;

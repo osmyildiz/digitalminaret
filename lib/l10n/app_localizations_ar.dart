@@ -210,6 +210,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get playDuaAfterAdhan => 'تشغيل الدعاء بعد الأذان';
 
   @override
+  String get lockScreenTimeline => 'Lock screen prayer timeline';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'حزمة الأذان: $packName';
   }

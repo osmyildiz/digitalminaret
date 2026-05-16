@@ -12,8 +12,8 @@ android {
         applicationId = "com.osmyildiz.digitalminaret"
         minSdk = 30 // Wear OS 3+
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.0.4"
+        versionCode = 11
+        versionName = "1.0.7"
     }
 
     buildTypes {

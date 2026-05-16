@@ -4,8 +4,14 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- SCHEDULE_EXACT_ALARM is allowed for time-critical prayer
+         reminders (user grants the "Alarms & reminders" special
+         access on Android 14+). USE_EXACT_ALARM is intentionally NOT
+         declared: Google Play restricts it to alarm-clock/calendar
+         apps only, and a prayer-times app is not eligible. Notification
+         scheduling falls back to inexact automatically when exact is
+         unavailable (see notification_service.dart). -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />

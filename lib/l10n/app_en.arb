@@ -83,6 +83,7 @@
 
   "fullAdhanOnNotificationTap": "Full adhan on notification tap",
   "playDuaAfterAdhan": "Play dua after adhan",
+  "lockScreenTimeline": "Lock screen prayer timeline",
   "adhanPackLabel": "Adhan Pack: {packName}",
   "@adhanPackLabel": {
     "placeholders": {
