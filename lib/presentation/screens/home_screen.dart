@@ -20,6 +20,7 @@ import '../../data/services/storage_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/prayer_provider.dart';
 import '../widgets/mini_qibla_compass.dart';
+import '../../core/utils/locale_string.dart';
 import '../../l10n/app_localizations.dart';
 import 'settings_screen.dart';
 
@@ -146,8 +147,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ? l.suhoorEnds
               : model.nextPrayer == PrayerType.maghrib
               ? l.iftarTime
-              : nextPrayerName.toUpperCase())
-        : nextPrayerName.toUpperCase();
+              : nextPrayerName.toLocaleUpperCase(context))
+        : nextPrayerName.toLocaleUpperCase(context);
     final isJumuahActive =
         now.weekday == DateTime.friday &&
         model.activePrayer == PrayerType.dhuhr;
@@ -363,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            activePrayerName.toUpperCase(),
+                            activePrayerName.toLocaleUpperCase(context),
                             style: GoogleFonts.cinzel(
                               color: accentColor,
                               letterSpacing: 2.4,
@@ -372,11 +373,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               shadows: textShadows,
                             ),
                           ),
+                          // Active prayer time — primary hero element.
                           Text(
                             activePrayerTime,
                             style: GoogleFonts.manrope(
-                              color: primaryTextColor.withValues(alpha: 0.78),
-                              fontSize: 24,
+                              color: primaryTextColor,
+                              fontSize: 46,
                               fontWeight: isDayTime
                                   ? FontWeight.w500
                                   : FontWeight.w300,
@@ -384,10 +386,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           if (isJumuahActive) const SizedBox(height: 4),
-                          const SizedBox(height: 12),
-                          // Hero countdown — primary user-facing element.
-                          // Color escalates as deadline approaches:
-                          //   < 15 min → warm orange, < 5 min → red.
+                          const SizedBox(height: 6),
+                          // Countdown sits just below the hero time as a
+                          // secondary readout. Color escalates as deadline
+                          // approaches: < 15 min → orange, < 5 min → red.
                           Builder(
                             builder: (_) {
                               final remaining = model.timeUntilNext.isNegative
@@ -396,10 +398,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               final urgent = remaining.inMinutes < 5;
                               final warn =
                                   !urgent && remaining.inMinutes < 15;
+                              // Day (gold bg) needs darker, saturated
+                              // shades for contrast; night (navy bg)
+                              // keeps the brighter ones.
                               final countdownColor = urgent
-                                  ? const Color(0xFFE85A5A)
+                                  ? (isDayTime
+                                      ? const Color(0xFFA3261B)
+                                      : const Color(0xFFE85A5A))
                                   : warn
-                                      ? const Color(0xFFFFA552)
+                                      ? (isDayTime
+                                          ? const Color(0xFF9A5410)
+                                          : const Color(0xFFFFA552))
                                       : accentColor;
                               return Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -408,9 +417,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     _durationText(remaining),
                                     style: GoogleFonts.manrope(
                                       color: countdownColor,
-                                      fontSize: 40,
+                                      fontSize: 26,
                                       fontWeight: FontWeight.w700,
-                                      letterSpacing: 2,
+                                      letterSpacing: 1.4,
                                       height: 1,
                                       fontFeatures: const [
                                         FontFeature.tabularFigures(),
@@ -418,30 +427,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       shadows: [
                                         Shadow(
                                           color: countdownColor.withValues(
-                                            alpha: 0.45,
+                                            alpha: 0.35,
                                           ),
-                                          blurRadius: 14,
+                                          blurRadius: 10,
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 8),
                                   SizedBox(
-                                    width: 200,
+                                    width: 180,
                                     child: ClipRRect(
                                       borderRadius:
                                           BorderRadius.circular(999),
                                       child: Stack(
                                         children: [
                                           Container(
-                                            height: 5,
+                                            height: 4,
                                             color: Colors.white
                                                 .withValues(alpha: 0.12),
                                           ),
                                           FractionallySizedBox(
                                             widthFactor: phaseProgress,
                                             child: Container(
-                                              height: 5,
+                                              height: 4,
                                               decoration: BoxDecoration(
                                                 color: countdownColor,
                                                 boxShadow: [
@@ -450,7 +459,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         .withValues(
                                                           alpha: 0.55,
                                                         ),
-                                                    blurRadius: 6,
+                                                    blurRadius: 5,
                                                   ),
                                                 ],
                                               ),
@@ -492,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 if (eidLabel != null) ...[
                                   const SizedBox(height: 7),
                                   Text(
-                                    '✨ ${eidLabel.toUpperCase()} ✨  $eidPrayerTime',
+                                    '✨ ${eidLabel.toLocaleUpperCase(context)} ✨  $eidPrayerTime',
                                     style: GoogleFonts.cinzel(
                                       color: accentColor,
                                       fontSize: 13,
@@ -587,7 +596,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    // Bottom padding ensures the last row (Isha) clears
+                    // curved screen edges, gesture home-indicator areas,
+                    // and tighter device chrome on phones that report
+                    // a smaller SafeArea inset than the actual visual
+                    // bottom. 40dp is enough breathing room on every
+                    // device we tested without leaving a dead gap.
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -1029,7 +1044,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title.toUpperCase(),
+                          title.toLocaleUpperCase(dialogContext),
                           style: GoogleFonts.cinzel(
                             color: const Color(0xFFFFE6A8),
                             fontSize: 17,
@@ -1112,8 +1127,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? l.suhoorEnds
                   : model.nextPrayer == PrayerType.maghrib
                   ? l.iftarTime
-                  : nextPrayerName.toUpperCase())
-            : nextPrayerName.toUpperCase();
+                  : nextPrayerName.toLocaleUpperCase(context))
+            : nextPrayerName.toLocaleUpperCase(context);
 
         return _ActivePrayerCard(
           prayerName: _displayPrayerName(context, entry.type, now, isRamadan),
@@ -1490,7 +1505,7 @@ class _ActivePrayerCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          prayerName.toUpperCase(),
+                          prayerName.toLocaleUpperCase(context),
                           style: GoogleFonts.cinzel(
                             fontSize: 30,
                             color: palette.accentColor,
@@ -1740,7 +1755,7 @@ class _InactivePrayerRow extends StatelessWidget {
               Icon(icon, color: color, size: 22),
               const SizedBox(width: 14),
               Text(
-                prayerName.toUpperCase(),
+                prayerName.toLocaleUpperCase(context),
                 style: GoogleFonts.cinzel(
                   color: color,
                   fontSize: 22,

@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/utils/locale_string.dart';
+
 const Color kGoldColor = Color(0xFFFFD98F);
 const Color kDarkGlassColor = Color(0xFF111623);
 
@@ -182,7 +184,7 @@ class WidgetSquare extends StatelessWidget {
                 const DigitalMinaretLogo(size: 40, color: kGoldColor),
                 const SizedBox(height: 8),
                 Text(
-                  prayerName.toUpperCase(),
+                  prayerName.toLocaleUpperCase(context),
                   style: GoogleFonts.cinzel(
                     color: kGoldColor,
                     fontSize: 22,

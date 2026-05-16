@@ -15,6 +15,16 @@
         android:textSize="11sp"
         android:fontFamily="@font/manrope_variable" />
 
+    <!-- Sun-trajectory arc bitmap, rendered server-side by
+         ArcBitmapRenderer and set via setImageViewBitmap. -->
+    <ImageView
+        android:id="@+id/notif_arc"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="6dp"
+        android:scaleType="fitCenter"
+        android:contentDescription="@null" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

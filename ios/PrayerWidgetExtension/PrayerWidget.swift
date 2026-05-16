@@ -424,7 +424,7 @@ struct PrayerWidgetView: View {
         let lower = name.lowercased()
         return lower == "sunrise" || lower == "güneş" || lower == "شروق"
             || lower == "الشروق" || lower == "terbit" || lower == "chourouk"
-            || lower == "طلوع آفتاب"
+            || lower == "طلوع آفتاب" || lower == "日の出"
     }
 
     private var smallCompact: some View {
@@ -478,6 +478,9 @@ struct PrayerWidgetView: View {
             "الفجر": "فجر", "الشروق": "شروق", "الظهر": "ظهر",
             "العصر": "عصر", "المغرب": "مغرب", "العشاء": "عشاء",
             "subuh": "فجر",
+            // Japanese katakana transliterations
+            "ファジュル": "فجر", "日の出": "شروق", "ドゥフル": "ظهر",
+            "アスル": "عصر", "マグリブ": "مغرب", "イシャー": "عشاء",
         ]
         return staticMap[prayer.lowercased()] ?? prayer
     }

@@ -1694,23 +1694,36 @@ class _ChoicePill<T> extends StatelessWidget {
               onTap: () => onChanged(value),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 160),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 6,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? palette.selectedBg : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Center(
+                // FittedBox needs bounded constraints to scale text down.
+                // Wrapping with SizedBox.expand + Align gives it the
+                // cell's full inner width so longer labels like
+                // "Non-Hanafi" / "Hanefi Dışı" / "ハナフィー以外" shrink
+                // to fit instead of overflowing.
+                child: SizedBox(
+                  width: double.infinity,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
+                    alignment: Alignment.center,
                     child: Text(
                       labelBuilder(value),
                       maxLines: 1,
                       softWrap: false,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
+                        fontSize: 13,
                         color: isSelected
                             ? palette.selectedFg
                             : palette.primaryText,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ),

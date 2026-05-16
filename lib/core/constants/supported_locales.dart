@@ -49,5 +49,10 @@ class SupportedLocales {
       nativeName: 'فارسی',
       englishName: 'Persian',
     ),
+    SupportedLocaleInfo(
+      locale: Locale('ja'),
+      nativeName: '日本語',
+      englishName: 'Japanese',
+    ),
   ];
 }

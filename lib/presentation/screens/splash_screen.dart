@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:upgrader/upgrader.dart';
 
 import '../../core/utils/locale_defaults.dart';
 import '../../core/utils/logger.dart';
@@ -80,9 +81,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
+        // Returning users land on Home wrapped in UpgradeAlert — it
+        // checks the App Store / Play Store on launch and shows an
+        // "update available" dialog when a newer version is published.
+        // First-run users (onboarding) already have the latest build.
         builder: (_) => locationProvider.location == null
             ? const OnboardingScreen()
-            : const HomeScreen(),
+            : UpgradeAlert(
+                upgrader: Upgrader(
+                  durationUntilAlertAgain: const Duration(days: 1),
+                ),
+                child: const HomeScreen(),
+              ),
       ),
     );
   }

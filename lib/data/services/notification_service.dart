@@ -85,6 +85,15 @@ class NotificationService {
       'tashreeq_body': 'تکبیرات تشریق مبارک را فراموش نکنید.',
       'jumuah': 'جمعه مبارک',
     },
+    'ja': {
+      'in_minutes': '{prayer}まであと15分',
+      'prepare': '準備のためにあと15分あります。',
+      'time': '{prayer}の時刻',
+      'started': '礼拝の時刻になりました。タップしてアザーンを聞きます。',
+      'tashreeq_title': 'リマインダー: タクビール・アッ=タシュリーク',
+      'tashreeq_body': '祝福されたタシュリークのタクビールを忘れないでください。',
+      'jumuah': 'ジュムア・ムバーラク',
+    },
   };
 
   String _str(String locale, String key, {String? prayer}) {
@@ -490,6 +499,7 @@ class NotificationService {
     'id': {PrayerType.fajr: 'Subuh', PrayerType.sunrise: 'Terbit', PrayerType.dhuhr: 'Dzuhur', PrayerType.asr: 'Ashar', PrayerType.maghrib: 'Maghrib', PrayerType.isha: 'Isya'},
     'fr': {PrayerType.fajr: 'Fajr', PrayerType.sunrise: 'Chourouk', PrayerType.dhuhr: 'Dohr', PrayerType.asr: 'Asr', PrayerType.maghrib: 'Maghrib', PrayerType.isha: 'Isha'},
     'fa': {PrayerType.fajr: 'فجر', PrayerType.sunrise: 'طلوع آفتاب', PrayerType.dhuhr: 'ظهر', PrayerType.asr: 'عصر', PrayerType.maghrib: 'مغرب', PrayerType.isha: 'عشاء'},
+    'ja': {PrayerType.fajr: 'ファジュル', PrayerType.sunrise: '日の出', PrayerType.dhuhr: 'ドゥフル', PrayerType.asr: 'アスル', PrayerType.maghrib: 'マグリブ', PrayerType.isha: 'イシャー'},
   };
 
   static const Map<String, Map<String, String>> _specialNames = {
@@ -500,6 +510,7 @@ class NotificationService {
     'id': {'jumuah': 'Jumat', 'iftar': 'Buka Puasa', 'suhoor': 'Sahur'},
     'fr': {'jumuah': 'Joumou\'a', 'iftar': 'Iftar', 'suhoor': 'Souhour'},
     'fa': {'jumuah': 'جمعه', 'iftar': 'افطار', 'suhoor': 'سحر'},
+    'ja': {'jumuah': 'ジュムア', 'iftar': 'イフタール', 'suhoor': 'スフール'},
   };
 
   String _localizedNotificationPrayerName({

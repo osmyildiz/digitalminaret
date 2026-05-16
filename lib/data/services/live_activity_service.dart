@@ -25,18 +25,24 @@ class LiveActivityService {
   bool? _supportedCache;
 
   Future<bool> isSupported() async {
+    debugPrint('[LiveActivity] isSupported called platform=${Platform.operatingSystem}');
     if (kIsWeb) return false;
     if (!Platform.isIOS && !Platform.isAndroid) return false;
-    if (_supportedCache != null) return _supportedCache!;
+    if (_supportedCache != null) {
+      debugPrint('[LiveActivity] isSupported cached=$_supportedCache');
+      return _supportedCache!;
+    }
     try {
       final raw = await _channel.invokeMethod<bool>('isSupported');
       _supportedCache = raw ?? false;
+      debugPrint('[LiveActivity] isSupported native=$raw cached=$_supportedCache');
       return _supportedCache!;
     } on PlatformException catch (error) {
-      debugPrint('[LiveActivity] isSupported failed: $error');
+      debugPrint('[LiveActivity] isSupported PlatformException: $error');
       _supportedCache = false;
       return false;
-    } on MissingPluginException {
+    } on MissingPluginException catch (error) {
+      debugPrint('[LiveActivity] isSupported MissingPlugin: $error');
       _supportedCache = false;
       return false;
     }
@@ -55,8 +61,16 @@ class LiveActivityService {
     required String activePrayerLocalized,
     required String nextPrayerLocalized,
     required String activePrayerArabic,
+    // Ordered full-day schedule (Fajr → Isha) as {name, epochMs} for
+    // the proportional timeline. Optional — empty falls back to the
+    // active→next-only rendering.
+    List<Map<String, Object>> schedule = const [],
   }) async {
-    if (!await isSupported()) return;
+    debugPrint('[LiveActivity] startOrUpdate ENTRY active=$activePrayerLocalized next=$nextPrayerLocalized');
+    if (!await isSupported()) {
+      debugPrint('[LiveActivity] startOrUpdate skipped — not supported');
+      return;
+    }
 
     final now = DateTime.now();
     final remaining = nextPrayerTime.difference(now);
@@ -77,6 +91,7 @@ class LiveActivityService {
       'location': times.locationName,
       'remainingText': _formatRemaining(remaining),
       'progressPercent': progress,
+      'schedule': schedule,
     };
 
     try {
@@ -84,13 +99,17 @@ class LiveActivityService {
       // false (iOS) and we fall through to start. Android's update path
       // also creates if missing, so the start branch is iOS-only in
       // practice.
+      debugPrint('[LiveActivity] invoking update');
       final updated = await _channel.invokeMethod<bool>('update', args);
+      debugPrint('[LiveActivity] update returned=$updated');
       if (updated == true) return;
-      await _channel.invokeMethod<String>('start', args);
+      debugPrint('[LiveActivity] invoking start');
+      final id = await _channel.invokeMethod<String>('start', args);
+      debugPrint('[LiveActivity] start returned id=$id');
     } on PlatformException catch (error) {
-      debugPrint('[LiveActivity] startOrUpdate failed: $error');
-    } on MissingPluginException {
-      // Native bridge not wired (e.g. first run before rebuild).
+      debugPrint('[LiveActivity] startOrUpdate PlatformException: $error');
+    } on MissingPluginException catch (error) {
+      debugPrint('[LiveActivity] startOrUpdate MissingPlugin: $error');
     }
   }
 

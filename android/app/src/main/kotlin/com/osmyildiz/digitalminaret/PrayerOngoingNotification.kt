@@ -32,6 +32,7 @@ object PrayerOngoingNotification {
         nextPrayerTime: String,
         remaining: String,
         progressPercent: Int,
+        prayerEpochs: List<Long> = emptyList(),
     ) {
         ensureChannel(context)
 
@@ -49,8 +50,21 @@ object PrayerOngoingNotification {
             setTextColor(R.id.notif_remaining, color)
         }
 
+        // Full-day timeline, rasterised because RemoteViews can't host a
+        // Canvas. Mirrors the iOS Live Activity DayTimelineView (nodes
+        // on a proportional line, day/night switch, no labels). Falls
+        // back to a progress-only bar if the schedule is missing.
+        val timelineBitmap = TimelineBitmapRenderer.render(
+            context = context,
+            widthDp = 320,
+            heightDp = 26,
+            prayerEpochs = prayerEpochs,
+            nowMs = System.currentTimeMillis(),
+        )
+
         val expanded = RemoteViews(context.packageName, R.layout.notification_ongoing_expanded).apply {
             setTextViewText(R.id.notif_location, location)
+            setImageViewBitmap(R.id.notif_arc, timelineBitmap)
             setTextViewText(R.id.notif_active_arabic, activePrayerArabic)
             setTextViewText(R.id.notif_active_prayer, activePrayer.uppercase())
             setTextViewText(R.id.notif_active_time, activePrayerTime)

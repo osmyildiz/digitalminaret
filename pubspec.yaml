@@ -48,6 +48,9 @@ dependencies:
   purchases_flutter: ^8.10.1
   flutter_islamic_icons: ^1.0.2
 
+  # In-app update prompt (checks App Store / Play Store on launch)
+  upgrader: ^11.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

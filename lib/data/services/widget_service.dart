@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 
 import '../../core/enums/prayer_type.dart';
@@ -76,6 +79,14 @@ class WidgetService {
       PrayerType.maghrib: 'مغرب',
       PrayerType.isha: 'عشاء',
     },
+    'ja': {
+      PrayerType.fajr: 'ファジュル',
+      PrayerType.sunrise: '日の出',
+      PrayerType.dhuhr: 'ドゥフル',
+      PrayerType.asr: 'アスル',
+      PrayerType.maghrib: 'マグリブ',
+      PrayerType.isha: 'イシャー',
+    },
   };
 
   Future<void> updateWidget(
@@ -145,6 +156,16 @@ class WidgetService {
     // Activity countdown auto-ticks via SwiftUI's Text(timerInterval:),
     // so we only need to push when the active/next prayer flips —
     // i.e. each time prayer times are recomputed.
+    // Full ordered day schedule (Fajr → Isha) for the proportional
+    // Live Activity timeline.
+    final schedule = <Map<String, Object>>[
+      for (final entry in ordered)
+        {
+          'name': names[entry.key] ?? entry.key.name,
+          'epochMs': entry.value.millisecondsSinceEpoch,
+        },
+    ];
+
     await _liveActivityService.startOrUpdate(
       times: times,
       activePrayer: current.key,
@@ -154,6 +175,7 @@ class WidgetService {
       activePrayerLocalized: names[current.key] ?? current.key.name,
       nextPrayerLocalized: names[next.key] ?? next.key.name,
       activePrayerArabic: _arabicByPrayer(current.key, previousPrayerTime),
+      schedule: schedule,
     );
 
     // Push to paired Wear OS device — Android-only, silent no-op
@@ -241,13 +263,31 @@ class WidgetService {
       );
     }
 
+    // Main update — works on both iOS (via iOSName) and Android (via the
+    // `name` fallback, which matches the AppWidgetProvider class name).
     await HomeWidget.updateWidget(
       name: 'PrayerWidgetProvider',
       iOSName: _iosWidgetKind,
     );
-    await HomeWidget.updateWidget(androidName: 'PrayerWidgetSmallProvider');
-    await HomeWidget.updateWidget(androidName: 'PrayerWidgetMediumProvider');
-    await HomeWidget.updateWidget(androidName: 'PrayerWidgetXLargeProvider');
+
+    // Android has 3 additional widget sizes registered as separate
+    // AppWidgetProvider classes; refresh each one. On iOS these calls
+    // would fail because the plugin requires `name` or `iOSName` to be
+    // non-null, so we guard by platform.
+    if (!kIsWeb && Platform.isAndroid) {
+      await HomeWidget.updateWidget(
+        name: 'PrayerWidgetSmallProvider',
+        androidName: 'PrayerWidgetSmallProvider',
+      );
+      await HomeWidget.updateWidget(
+        name: 'PrayerWidgetMediumProvider',
+        androidName: 'PrayerWidgetMediumProvider',
+      );
+      await HomeWidget.updateWidget(
+        name: 'PrayerWidgetXLargeProvider',
+        androidName: 'PrayerWidgetXLargeProvider',
+      );
+    }
   }
 
   String _durationText(Duration d) {

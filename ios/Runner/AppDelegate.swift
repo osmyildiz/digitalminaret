@@ -8,6 +8,9 @@ import ActivityKit
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private let pendingTapPayloadKey = "pending_notification_tap_payload_v1"
   private static let liveActivityChannelName = "com.osmyildiz.digitalminaret/live_activity"
+  // Retained so ARC doesn't release the channel — FlutterMethodChannel
+  // holds its handler weakly via the binary messenger.
+  private static var retainedLiveActivityChannel: FlutterMethodChannel?
 
   override func application(
     _ application: UIApplication,
@@ -18,16 +21,20 @@ import ActivityKit
     }
     UNUserNotificationCenter.current().delegate = self
 
-    let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-
-    if let controller = window?.rootViewController as? FlutterViewController {
-      registerLiveActivityChannel(on: controller)
-    }
-    return result
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  // Implicit-engine pattern: this fires AFTER the Flutter engine is
+  // created and BEFORE Dart code runs, which is the only window where
+  // the binaryMessenger exists AND no Dart-side `MissingPluginException`
+  // can be thrown yet. Registering the MethodChannel here closes the
+  // race window we hit when binding inside didFinishLaunching (the root
+  // view controller is nil at that point).
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "DigitalMinaretLiveActivity") {
+      registerLiveActivityChannel(messenger: registrar.messenger())
+    }
   }
 
   override func userNotificationCenter(
@@ -46,11 +53,12 @@ import ActivityKit
 
   // MARK: - Live Activity bridge
 
-  private func registerLiveActivityChannel(on controller: FlutterViewController) {
+  private func registerLiveActivityChannel(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(
       name: AppDelegate.liveActivityChannelName,
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: messenger
     )
+    Self.retainedLiveActivityChannel = channel
 
     channel.setMethodCallHandler { [weak self] call, result in
       guard #available(iOS 16.1, *) else {
@@ -96,10 +104,18 @@ import ActivityKit
       return
     }
 
+    let stale = nextPrayerDate(state)
+
     // If an activity already exists, update instead of creating a duplicate.
     if let existing = Activity<PrayerActivityAttributes>.activities.first {
       Task {
-        await existing.update(using: state)
+        if #available(iOS 16.2, *) {
+          await existing.update(
+            ActivityContent(state: state, staleDate: stale)
+          )
+        } else {
+          await existing.update(using: state)
+        }
         await MainActor.run { result(existing.id) }
       }
       return
@@ -107,11 +123,20 @@ import ActivityKit
 
     do {
       let attrs = PrayerActivityAttributes(widgetKind: "PrayerLiveActivity")
-      let activity = try Activity<PrayerActivityAttributes>.request(
-        attributes: attrs,
-        contentState: state,
-        pushType: nil
-      )
+      let activity: Activity<PrayerActivityAttributes>
+      if #available(iOS 16.2, *) {
+        activity = try Activity<PrayerActivityAttributes>.request(
+          attributes: attrs,
+          content: ActivityContent(state: state, staleDate: stale),
+          pushType: nil
+        )
+      } else {
+        activity = try Activity<PrayerActivityAttributes>.request(
+          attributes: attrs,
+          contentState: state,
+          pushType: nil
+        )
+      }
       result(activity.id)
     } catch {
       result(FlutterError(
@@ -133,9 +158,16 @@ import ActivityKit
       result(false)
       return
     }
+    let stale = nextPrayerDate(state)
     Task {
       for activity in activities {
-        await activity.update(using: state)
+        if #available(iOS 16.2, *) {
+          await activity.update(
+            ActivityContent(state: state, staleDate: stale)
+          )
+        } else {
+          await activity.update(using: state)
+        }
       }
       await MainActor.run { result(true) }
     }
@@ -164,13 +196,46 @@ import ActivityKit
       let nextMs = dict["nextPrayerEpochMs"] as? NSNumber
     else { return nil }
 
+    // Decode the full day schedule (array of {name, epochMs}).
+    var schedule: [PrayerActivityAttributes.PrayerStop] = []
+    if let rawSchedule = dict["schedule"] as? [[String: Any]] {
+      for item in rawSchedule {
+        if let name = item["name"] as? String,
+           let ms = item["epochMs"] as? NSNumber {
+          schedule.append(
+            PrayerActivityAttributes.PrayerStop(
+              name: name,
+              time: Date(timeIntervalSince1970: ms.doubleValue / 1000.0)
+            )
+          )
+        }
+      }
+    }
+
     return PrayerActivityAttributes.ContentState(
       activePrayer: activePrayer,
       activePrayerArabic: activePrayerArabic,
       activePrayerTime: Date(timeIntervalSince1970: activeMs.doubleValue / 1000.0),
       nextPrayer: nextPrayer,
       nextPrayerTime: Date(timeIntervalSince1970: nextMs.doubleValue / 1000.0),
-      location: location
+      location: location,
+      schedule: schedule
     )
+  }
+
+  /// The earliest upcoming prayer in the state — used as the activity's
+  /// staleDate so iOS re-renders the Live Activity right when a prayer
+  /// passes (the view then recomputes "next" from the schedule and the
+  /// countdown flips, even while the phone is locked).
+  @available(iOS 16.1, *)
+  private func nextPrayerDate(
+    _ state: PrayerActivityAttributes.ContentState
+  ) -> Date {
+    let now = Date()
+    let future = state.schedule
+      .map(\.time)
+      .filter { $0 > now }
+      .min()
+    return future ?? state.nextPrayerTime
   }
 }

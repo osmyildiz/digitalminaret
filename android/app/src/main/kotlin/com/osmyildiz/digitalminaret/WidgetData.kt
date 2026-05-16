@@ -43,6 +43,9 @@ object WidgetData {
         "isha" to "عشاء", "yatsı" to "عشاء", "isya" to "عشاء",
         "الفجر" to "فجر", "الشروق" to "شروق", "الظهر" to "ظهر",
         "العصر" to "عصر", "المغرب" to "مغرب", "العشاء" to "عشاء",
+        // Japanese katakana transliterations
+        "ファジュル" to "فجر", "日の出" to "شروق", "ドゥフル" to "ظهر",
+        "アスル" to "عصر", "マグリブ" to "مغرب", "イシャー" to "عشاء",
     )
 
     private val hijriMonthNames = listOf(
@@ -92,7 +95,7 @@ object WidgetData {
     fun isSunrise(name: String): Boolean {
         val l = name.lowercase(Locale.ROOT)
         return l == "sunrise" || l == "güneş" || l == "شروق" || l == "الشروق" ||
-            l == "terbit" || l == "chourouk" || l == "طلوع آفتاب"
+            l == "terbit" || l == "chourouk" || l == "طلوع آفتاب" || l == "日の出"
     }
 
     /// Returns "<day> <month-name>" for today in Umm al-Qura (mirrors iOS).

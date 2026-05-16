@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/utils/locale_string.dart';
+
 class PremiumSettingsCard extends StatelessWidget {
   const PremiumSettingsCard({
     super.key,
@@ -57,7 +59,7 @@ class PremiumSectionHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            title.toUpperCase(),
+            title.toLocaleUpperCase(context),
             style: GoogleFonts.cinzel(
               color: const Color(0xFFFFE6A8),
               fontSize: 18,

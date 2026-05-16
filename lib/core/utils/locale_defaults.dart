@@ -7,7 +7,7 @@ class LocaleDefaults {
   /// Falls back to 'en' if no match is found.
   static String resolveAppLocale(Locale platformLocale) {
     const supported = {
-      'en', 'tr', 'ar', 'ur', 'id', 'fa', 'fr',
+      'en', 'tr', 'ar', 'ur', 'id', 'fa', 'fr', 'ja',
     };
     final lang = platformLocale.languageCode;
     if (supported.contains(lang)) {
@@ -110,6 +110,8 @@ class LocaleDefaults {
       case 'prs':
         return CalculationMethod.tehran;
       case 'fr':
+        return CalculationMethod.muslimWorldLeague;
+      case 'ja':
         return CalculationMethod.muslimWorldLeague;
       default:
         return CalculationMethod.isna;

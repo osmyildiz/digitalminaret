@@ -341,14 +341,7 @@ class _QiblaScreenState extends State<QiblaScreen>
                       ),
                     ),
                     // 3. Kaaba image at center
-                    ClipOval(
-                      child: Image.asset(
-                        'assets/images/kaaba.png',
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+
                   ],
                 ),
               ),
@@ -785,14 +778,7 @@ class _StaticQiblaFallback extends StatelessWidget {
                   ),
                 ),
                 // 3. Kaaba image at center
-                ClipOval(
-                  child: Image.asset(
-                    'assets/images/kaaba.png',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+
               ],
             ),
           ),

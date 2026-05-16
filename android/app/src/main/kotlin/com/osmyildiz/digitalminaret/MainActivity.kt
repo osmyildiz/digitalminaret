@@ -32,6 +32,11 @@ class MainActivity : FlutterActivity() {
                             return@setMethodCallHandler
                         }
                         try {
+                            val scheduleRaw = args["schedule"] as? List<*>
+                            val epochs = scheduleRaw?.mapNotNull { item ->
+                                ((item as? Map<*, *>)?.get("epochMs")
+                                    as? Number)?.toLong()
+                            } ?: emptyList()
                             PrayerOngoingNotification.show(
                                 context = applicationContext,
                                 location = args["location"] as? String ?: "",
@@ -42,6 +47,7 @@ class MainActivity : FlutterActivity() {
                                 nextPrayerTime = args["nextPrayerTimeText"] as? String ?: "",
                                 remaining = args["remainingText"] as? String ?: "",
                                 progressPercent = (args["progressPercent"] as? Number)?.toInt() ?: 0,
+                                prayerEpochs = epochs,
                             )
                             result.success(true)
                         } catch (error: Throwable) {
