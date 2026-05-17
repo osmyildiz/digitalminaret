@@ -121,37 +121,46 @@ private struct PhasePalette {
     }
 }
 
+/// The pushed schedule only covers ONE day (Fajr…Isha). If the phone
+/// stays locked past a day boundary the activity would otherwise get
+/// stuck (single +1d wrap math breaks once "now" passes the next
+/// day's Fajr without an app push). We expand the schedule across
+/// yesterday / today / tomorrow — prayer times barely shift day to
+/// day, so ±1d copies are a safe visual approximation — and select
+/// active/next from that rolling window so it never freezes.
+@available(iOS 16.1, *)
+func expandedStops(_ base: [PrayerActivityAttributes.PrayerStop])
+    -> [PrayerActivityAttributes.PrayerStop] {
+    let sorted = base.sorted { $0.time < $1.time }
+    var out: [PrayerActivityAttributes.PrayerStop] = []
+    for off in [-86_400.0, 0.0, 86_400.0] {
+        for s in sorted {
+            out.append(.init(name: s.name,
+                             time: s.time.addingTimeInterval(off)))
+        }
+    }
+    return out.sorted { $0.time < $1.time }
+}
+
 /// Schedule-derived "next prayer" so the activity self-advances even
-/// while the phone is locked (iOS re-renders periodically; the lookup
-/// then returns the new target and the countdown flips automatically).
+/// while the phone is locked for a long time.
 @available(iOS 16.1, *)
 func scheduleNext(_ s: PrayerActivityAttributes.ContentState)
     -> (name: String, time: Date) {
     let now = Date()
-    let stops = s.schedule.sorted { $0.time < $1.time }
-    if let up = stops.first(where: { $0.time > now }) {
+    if let up = expandedStops(s.schedule).first(where: { $0.time > now }) {
         return (up.name, up.time)
-    }
-    if let first = stops.first {
-        return (first.name, first.time.addingTimeInterval(86_400))
     }
     return (s.nextPrayer, s.nextPrayerTime)
 }
 
-/// Schedule-derived "current/active prayer" (latest stop already
-/// reached). Mirrors scheduleNext so the displayed active name stays
-/// correct after a prayer passes without an app push.
+/// Schedule-derived "current/active prayer".
 @available(iOS 16.1, *)
 func scheduleActive(_ s: PrayerActivityAttributes.ContentState)
     -> (name: String, time: Date) {
     let now = Date()
-    let stops = s.schedule.sorted { $0.time < $1.time }
-    if let cur = stops.last(where: { $0.time <= now }) {
+    if let cur = expandedStops(s.schedule).last(where: { $0.time <= now }) {
         return (cur.name, cur.time)
-    }
-    // Before the day's first prayer → yesterday's last (Isha -1d).
-    if let last = stops.last {
-        return (last.name, last.time.addingTimeInterval(-86_400))
     }
     return (s.activePrayer, s.activePrayerTime)
 }
@@ -267,37 +276,44 @@ private struct DayTimelineView: View {
         let passed: Bool
     }
 
-    /// Picks the right set of stops to draw:
-    ///   • Daytime  (Sunrise ≤ now < Isha) → Fajr…Isha
-    ///   • Evening  (now ≥ Isha)           → Isha → Fajr(+1d) → Sunrise(+1d)
-    ///   • Pre-dawn (now < Sunrise)        → Isha(-1d) → Fajr → Sunrise
+    /// Picks the right set of stops to draw, using a rolling 3-day
+    /// window (yesterday / today / tomorrow) so the view keeps
+    /// advancing even when the phone stays locked across a day
+    /// boundary (no fresh push from the app):
+    ///   • Daytime  (Sunrise ≤ now < Isha) → that day's Fajr…Isha
+    ///   • Evening  (now ≥ Isha)           → Isha → Fajr(next) → Sunrise(next)
+    ///   • Pre-dawn (now < Sunrise)        → Isha(prev) → Fajr → Sunrise
     /// The night view collapses to the 3 points the user asked for and
-    /// automatically flips back to the day view once Sunrise passes.
+    /// automatically flips back to the day view once Sunrise passes —
+    /// for any "now", not just the single day the schedule was pushed.
     private func resolvedStops() -> [PrayerActivityAttributes.PrayerStop] {
-        let s = schedule.sorted { $0.time < $1.time }
-        guard s.count >= 6 else { return s }
-        let fajr = s[0], sunrise = s[1], isha = s[5]
-        let now = Date()
-        let day: TimeInterval = 86_400
+        let base = schedule.sorted { $0.time < $1.time }
+        let n = base.count
+        guard n >= 6 else { return base }
 
-        if now >= isha.time {
-            return [
-                isha,
-                .init(name: fajr.name,
-                      time: fajr.time.addingTimeInterval(day)),
-                .init(name: sunrise.name,
-                      time: sunrise.time.addingTimeInterval(day)),
-            ]
+        let all = expandedStops(base)        // yesterday/today/tomorrow
+        let days = all.count / n
+        guard days >= 2 else { return base }
+
+        let now = Date()
+        for d in 0..<days {
+            let sunrise = all[d * n + 1]
+            let isha = all[d * n + 5]
+
+            // Daytime: this day's Sunrise ≤ now < this day's Isha.
+            if now >= sunrise.time && now < isha.time {
+                return Array(all[(d * n)..<(d * n + n)])
+            }
+            // Night: this day's Isha ≤ now < next day's Sunrise.
+            if now >= isha.time, d + 1 < days {
+                let nextFajr = all[(d + 1) * n + 0]
+                let nextSunrise = all[(d + 1) * n + 1]
+                if now < nextSunrise.time {
+                    return [isha, nextFajr, nextSunrise]
+                }
+            }
         }
-        if now < sunrise.time {
-            return [
-                .init(name: isha.name,
-                      time: isha.time.addingTimeInterval(-day)),
-                fajr,
-                sunrise,
-            ]
-        }
-        return s
+        return Array(base.prefix(n))
     }
 
     /// Pre-computes node x-positions (ViewBuilder forbids local funcs).
