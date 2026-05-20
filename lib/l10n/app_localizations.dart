@@ -518,6 +518,36 @@ abstract class AppLocalizations {
   /// **'Lock screen prayer timeline: see your prayer day at a glance on the lock screen and Dynamic Island. You can turn it off anytime in Settings → Lock screen prayer timeline.'**
   String get whatsNewLockScreenTimelineBody;
 
+  /// No description provided for @whatsNewLockStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On your lock screen'**
+  String get whatsNewLockStepTitle;
+
+  /// No description provided for @whatsNewLockStepBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your prayer day at a glance — current prayer, timeline, and a live countdown to the next one. Updates while your phone stays locked.'**
+  String get whatsNewLockStepBody;
+
+  /// No description provided for @whatsNewSettingsStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it off anytime'**
+  String get whatsNewSettingsStepTitle;
+
+  /// No description provided for @whatsNewSettingsStepBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings and toggle off ‘Lock screen prayer timeline’ if you don\'t want the activity on your lock screen.'**
+  String get whatsNewSettingsStepBody;
+
+  /// No description provided for @whatsNewNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get whatsNewNext;
+
   /// No description provided for @whatsNewGotIt.
   ///
   /// In en, this message translates to:

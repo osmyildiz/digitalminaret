@@ -220,6 +220,23 @@ class AppLocalizationsUr extends AppLocalizations {
       'لاک اسکرین نماز ٹائم لائن: لاک اسکرین اور Dynamic Island پر اپنے دن کی نمازیں ایک نظر میں دیکھیں۔ آپ کسی بھی وقت ترتیبات ← لاک اسکرین نماز ٹائم لائن سے اسے بند کر سکتے ہیں۔';
 
   @override
+  String get whatsNewLockStepTitle => 'On your lock screen';
+
+  @override
+  String get whatsNewLockStepBody =>
+      'Your prayer day at a glance — current prayer, timeline, and a live countdown to the next one. Updates while your phone stays locked.';
+
+  @override
+  String get whatsNewSettingsStepTitle => 'Turn it off anytime';
+
+  @override
+  String get whatsNewSettingsStepBody =>
+      'Open Settings and toggle off ‘Lock screen prayer timeline’ if you don\'t want the activity on your lock screen.';
+
+  @override
+  String get whatsNewNext => 'Next';
+
+  @override
   String get whatsNewGotIt => 'سمجھ گیا';
 
   @override

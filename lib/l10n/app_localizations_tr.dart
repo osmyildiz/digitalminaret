@@ -220,6 +220,23 @@ class AppLocalizationsTr extends AppLocalizations {
       'Kilit ekranı vakit çizelgesi: artık kilit ekranı ve Dynamic Island\'da günün vakitlerini bir bakışta görebilirsin. İstediğin zaman Ayarlar → Kilit ekranı vakit çizelgesi\'nden kapatabilirsin.';
 
   @override
+  String get whatsNewLockStepTitle => 'Kilit ekranında';
+
+  @override
+  String get whatsNewLockStepBody =>
+      'Günün vakitleri bir bakışta — aktif vakit, çizelge ve sonraki vakte canlı geri sayım. Telefonun kilitliyken bile güncellenir.';
+
+  @override
+  String get whatsNewSettingsStepTitle => 'İstediğin zaman kapat';
+
+  @override
+  String get whatsNewSettingsStepBody =>
+      'Live Activity\'yi kilit ekranında istemiyorsan Ayarlar\'ı aç ve ‘Kilit ekranı vakit çizelgesi\'ni kapat.';
+
+  @override
+  String get whatsNewNext => 'İleri';
+
+  @override
   String get whatsNewGotIt => 'Tamam';
 
   @override

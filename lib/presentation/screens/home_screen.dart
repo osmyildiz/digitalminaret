@@ -20,6 +20,7 @@ import '../../data/services/storage_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/prayer_provider.dart';
 import '../widgets/mini_qibla_compass.dart';
+import '../widgets/whats_new_tour.dart';
 import '../../core/utils/locale_string.dart';
 import '../../l10n/app_localizations.dart';
 import 'settings_screen.dart';
@@ -76,20 +77,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _showWhatsNewSheet() async {
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    await showAdaptiveDialog<void>(
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog.adaptive(
-        title: Text(l10n.whatsNewTitle),
-        content: Text(l10n.whatsNewLockScreenTimelineBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.whatsNewGotIt),
-          ),
-        ],
-      ),
+      barrierColor: Colors.black.withValues(alpha: 0.72),
+      builder: (_) => const WhatsNewTour(),
     );
     // Persist regardless of dismissal mode so the dialog never appears
     // twice for the same announcement version.

@@ -86,6 +86,11 @@
   "lockScreenTimeline": "Lock screen prayer timeline",
   "whatsNewTitle": "What's new",
   "whatsNewLockScreenTimelineBody": "Lock screen prayer timeline: see your prayer day at a glance on the lock screen and Dynamic Island. You can turn it off anytime in Settings → Lock screen prayer timeline.",
+  "whatsNewLockStepTitle": "On your lock screen",
+  "whatsNewLockStepBody": "Your prayer day at a glance — current prayer, timeline, and a live countdown to the next one. Updates while your phone stays locked.",
+  "whatsNewSettingsStepTitle": "Turn it off anytime",
+  "whatsNewSettingsStepBody": "Open Settings and toggle off ‘Lock screen prayer timeline’ if you don't want the activity on your lock screen.",
+  "whatsNewNext": "Next",
   "whatsNewGotIt": "Got it",
   "adhanPackLabel": "Adhan Pack: {packName}",
   "@adhanPackLabel": {
