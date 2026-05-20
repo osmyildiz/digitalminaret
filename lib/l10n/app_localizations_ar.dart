@@ -213,6 +213,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lockScreenTimeline => 'جدول الصلاة على شاشة القفل';
 
   @override
+  String get whatsNewTitle => 'ما الجديد';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'جدول الصلاة على شاشة القفل: شاهد صلوات يومك في لمحة على شاشة القفل و Dynamic Island. يمكنك إيقافه في أي وقت من الإعدادات ← جدول الصلاة على شاشة القفل.';
+
+  @override
+  String get whatsNewGotIt => 'حسناً';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'حزمة الأذان: $packName';
   }

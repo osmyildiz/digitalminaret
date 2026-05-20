@@ -213,6 +213,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get lockScreenTimeline => 'Kilit ekranı vakit çizelgesi';
 
   @override
+  String get whatsNewTitle => 'Yenilik';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'Kilit ekranı vakit çizelgesi: artık kilit ekranı ve Dynamic Island\'da günün vakitlerini bir bakışta görebilirsin. İstediğin zaman Ayarlar → Kilit ekranı vakit çizelgesi\'nden kapatabilirsin.';
+
+  @override
+  String get whatsNewGotIt => 'Tamam';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'Ezan Paketi: $packName';
   }

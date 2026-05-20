@@ -506,6 +506,24 @@ abstract class AppLocalizations {
   /// **'Lock screen prayer timeline'**
   String get lockScreenTimeline;
 
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get whatsNewTitle;
+
+  /// No description provided for @whatsNewLockScreenTimelineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock screen prayer timeline: see your prayer day at a glance on the lock screen and Dynamic Island. You can turn it off anytime in Settings → Lock screen prayer timeline.'**
+  String get whatsNewLockScreenTimelineBody;
+
+  /// No description provided for @whatsNewGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get whatsNewGotIt;
+
   /// No description provided for @adhanPackLabel.
   ///
   /// In en, this message translates to:

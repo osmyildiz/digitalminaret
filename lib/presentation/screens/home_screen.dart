@@ -31,12 +31,18 @@ class HomeScreen extends StatefulWidget {
     this.seasonRulesService = const DefaultSeasonRulesService(),
     this.prayerLabelResolver = const PrayerLabelResolver(),
     this.showQiblaCompass = true,
+    this.showWhatsNew = false,
   });
 
   final DateTimeProvider dateTimeProvider;
   final SeasonRulesService seasonRulesService;
   final PrayerLabelResolver prayerLabelResolver;
   final bool showQiblaCompass;
+  // Set by SplashScreen for returning users on first launch after an
+  // update with a new "what's new" announcement. Triggers a one-time
+  // info dialog explaining the new feature; dismissal writes the
+  // current version into storage so it does not appear again.
+  final bool showWhatsNew;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -62,7 +68,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _ramadanOrnaments = _buildRandomRamadanOrnaments();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _maybeShowRatePrompt();
+      if (widget.showWhatsNew) {
+        _showWhatsNewSheet();
+      }
     });
+  }
+
+  Future<void> _showWhatsNewSheet() async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    await showAdaptiveDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog.adaptive(
+        title: Text(l10n.whatsNewTitle),
+        content: Text(l10n.whatsNewLockScreenTimelineBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.whatsNewGotIt),
+          ),
+        ],
+      ),
+    );
+    // Persist regardless of dismissal mode so the dialog never appears
+    // twice for the same announcement version.
+    await _storageService.setLastSeenOnboardingVersion(
+      AppConstants.currentOnboardingVersion,
+    );
   }
 
   @override

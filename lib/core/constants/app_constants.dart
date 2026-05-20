@@ -13,10 +13,14 @@ class AppConstants {
   static const String lastSeenOnboardingVersionKey =
       'last_seen_onboarding_version';
 
-  // Bump when onboarding content changes meaningfully. Users whose stored
-  // version is below this re-see onboarding once on their next launch
-  // (existing location / settings are preserved).
-  static const int currentOnboardingVersion = 1;
+  // Bumped when there is a "what's new" announcement returning users
+  // should see once. Fresh installs go through OnboardingScreen as
+  // before and have this value written on completion. Returning users
+  // (location already saved) whose stored value is below this see a
+  // one-time "what's new" sheet on Home and then have it written on
+  // dismissal. To re-announce a future feature, bump this and update
+  // the whatsNew* l10n strings.
+  static const int currentOnboardingVersion = 2;
 
   static const int ratePromptFirstOpen = 11;
   static const int ratePromptInterval = 11;

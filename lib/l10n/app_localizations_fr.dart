@@ -212,7 +212,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get playDuaAfterAdhan => 'Lire le doua après l\'adhan';
 
   @override
-  String get lockScreenTimeline => 'Chronologie des prières sur l\'écran verrouillé';
+  String get lockScreenTimeline =>
+      'Chronologie des prières sur l\'écran verrouillé';
+
+  @override
+  String get whatsNewTitle => 'Nouveautés';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'Chronologie des prières sur l\'écran verrouillé : visualisez d\'un coup d\'œil vos prières de la journée sur l\'écran verrouillé et Dynamic Island. Vous pouvez la désactiver à tout moment dans Réglages → Chronologie des prières sur l\'écran verrouillé.';
+
+  @override
+  String get whatsNewGotIt => 'Compris';
 
   @override
   String adhanPackLabel(String packName) {

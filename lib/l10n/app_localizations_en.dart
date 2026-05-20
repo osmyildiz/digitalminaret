@@ -213,6 +213,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lockScreenTimeline => 'Lock screen prayer timeline';
 
   @override
+  String get whatsNewTitle => 'What\'s new';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'Lock screen prayer timeline: see your prayer day at a glance on the lock screen and Dynamic Island. You can turn it off anytime in Settings → Lock screen prayer timeline.';
+
+  @override
+  String get whatsNewGotIt => 'Got it';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'Adhan Pack: $packName';
   }

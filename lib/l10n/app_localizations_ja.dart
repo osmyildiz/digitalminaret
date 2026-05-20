@@ -209,6 +209,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lockScreenTimeline => 'ロック画面の礼拝タイムライン';
 
   @override
+  String get whatsNewTitle => '新着情報';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'ロック画面の礼拝タイムライン：ロック画面と Dynamic Island で一日の礼拝を一目で確認できるようになりました。設定 → ロック画面の礼拝タイムラインからいつでもオフにできます。';
+
+  @override
+  String get whatsNewGotIt => '了解';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'アザーンパック: $packName';
   }

@@ -213,6 +213,16 @@ class AppLocalizationsUr extends AppLocalizations {
   String get lockScreenTimeline => 'لاک اسکرین نماز ٹائم لائن';
 
   @override
+  String get whatsNewTitle => 'نیا کیا ہے';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'لاک اسکرین نماز ٹائم لائن: لاک اسکرین اور Dynamic Island پر اپنے دن کی نمازیں ایک نظر میں دیکھیں۔ آپ کسی بھی وقت ترتیبات ← لاک اسکرین نماز ٹائم لائن سے اسے بند کر سکتے ہیں۔';
+
+  @override
+  String get whatsNewGotIt => 'سمجھ گیا';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'اذان پیک: $packName';
   }

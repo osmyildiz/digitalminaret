@@ -84,6 +84,9 @@
   "fullAdhanOnNotificationTap": "Full adhan on notification tap",
   "playDuaAfterAdhan": "Play dua after adhan",
   "lockScreenTimeline": "Lock screen prayer timeline",
+  "whatsNewTitle": "What's new",
+  "whatsNewLockScreenTimelineBody": "Lock screen prayer timeline: see your prayer day at a glance on the lock screen and Dynamic Island. You can turn it off anytime in Settings → Lock screen prayer timeline.",
+  "whatsNewGotIt": "Got it",
   "adhanPackLabel": "Adhan Pack: {packName}",
   "@adhanPackLabel": {
     "placeholders": {

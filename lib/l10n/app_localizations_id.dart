@@ -215,6 +215,16 @@ class AppLocalizationsId extends AppLocalizations {
   String get lockScreenTimeline => 'Linimasa salat di layar kunci';
 
   @override
+  String get whatsNewTitle => 'Yang Baru';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'Linimasa salat di layar kunci: lihat salat hari ini sekilas di layar kunci dan Dynamic Island. Anda bisa menonaktifkannya kapan saja di Pengaturan → Linimasa salat di layar kunci.';
+
+  @override
+  String get whatsNewGotIt => 'Mengerti';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'Paket Adzan: $packName';
   }

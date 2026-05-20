@@ -213,6 +213,16 @@ class AppLocalizationsFa extends AppLocalizations {
   String get lockScreenTimeline => 'جدول زمانی نماز در صفحه قفل';
 
   @override
+  String get whatsNewTitle => 'تازه‌ها';
+
+  @override
+  String get whatsNewLockScreenTimelineBody =>
+      'جدول زمانی نماز در صفحه قفل: نمازهای روز را در یک نگاه روی صفحه قفل و Dynamic Island ببینید. هر زمان می‌توانید از تنظیمات ← جدول زمانی نماز در صفحه قفل آن را خاموش کنید.';
+
+  @override
+  String get whatsNewGotIt => 'باشه';
+
+  @override
   String adhanPackLabel(String packName) {
     return 'بسته اذان: $packName';
   }

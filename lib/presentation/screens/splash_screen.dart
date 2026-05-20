@@ -32,6 +32,10 @@ class _SplashScreenState extends State<SplashScreen> {
   // Default true so a mid-bootstrap exception sends the user to onboarding
   // rather than Home with a null location.
   bool _showOnboarding = true;
+  // Set when the user already has a saved location but hasn't seen the
+  // current "what's new" announcement. Read by HomeScreen on first
+  // build to pop the WhatsNew dialog.
+  bool _showWhatsNew = false;
 
   Future<void> _bootstrap() async {
     final storageService = StorageService();
@@ -60,7 +64,12 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       await locationProvider.loadLocation();
-      _showOnboarding = locationProvider.location == null ||
+      // Fresh installs (no saved location) go through the setup
+      // wizard; returning users skip the wizard but, if they haven't
+      // seen the current announcement, get a one-time WhatsNew sheet
+      // over Home.
+      _showOnboarding = locationProvider.location == null;
+      _showWhatsNew = locationProvider.location != null &&
           lastSeenOnboarding < AppConstants.currentOnboardingVersion;
       if (locationProvider.location != null) {
         prayerProvider.setLocale(settingsProvider.settings.locale);
@@ -106,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 dialogStyle: UpgradeDialogStyle.cupertino,
                 showReleaseNotes: false,
                 showIgnore: false,
-                child: const HomeScreen(),
+                child: HomeScreen(showWhatsNew: _showWhatsNew),
               ),
       ),
     );
