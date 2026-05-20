@@ -62,6 +62,19 @@ android {
     }
 }
 
+// home_widget 0.9.0 pulls androidx.glance:glance-appwidget:1.+ which now
+// resolves to 1.3.0-alpha01. That alpha requires AGP 9.1+ and compileSdk
+// 37; we're on AGP 8.7.3. Pin glance to the latest stable 1.1.x that
+// builds cleanly here. Doing the same for the related compose-remote
+// transitive (older glance didn't pull it; forcing an unused stable
+// keeps any stray resolution well below alpha territory).
+configurations.all {
+    resolutionStrategy {
+        force("androidx.glance:glance-appwidget:1.1.1")
+        force("androidx.glance:glance:1.1.1")
+    }
+}
+
 flutter {
     source = "../.."
 }
