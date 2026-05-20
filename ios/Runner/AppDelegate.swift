@@ -3,11 +3,14 @@ import UIKit
 import flutter_local_notifications
 import UserNotifications
 import ActivityKit
+import BackgroundTasks
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private let pendingTapPayloadKey = "pending_notification_tap_payload_v1"
   private static let liveActivityChannelName = "com.osmyildiz.digitalminaret/live_activity"
+  private static let liveActivityRefreshIdentifier =
+    "com.osmyildiz.digitalminaret.liveactivity_refresh"
   // Retained so ARC doesn't release the channel — FlutterMethodChannel
   // holds its handler weakly via the binary messenger.
   private static var retainedLiveActivityChannel: FlutterMethodChannel?
@@ -21,7 +24,27 @@ import ActivityKit
     }
     UNUserNotificationCenter.current().delegate = self
 
+    // BGTaskScheduler.register MUST be called synchronously before
+    // didFinishLaunchingWithOptions returns, otherwise the system never
+    // delivers the scheduled task. The actual scheduling happens on
+    // backgrounding.
+    if #available(iOS 16.1, *) {
+      BGTaskScheduler.shared.register(
+        forTaskWithIdentifier: Self.liveActivityRefreshIdentifier,
+        using: nil
+      ) { task in
+        self.handleLiveActivityRefresh(task: task as! BGAppRefreshTask)
+      }
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func applicationDidEnterBackground(_ application: UIApplication) {
+    super.applicationDidEnterBackground(application)
+    if #available(iOS 16.1, *) {
+      scheduleLiveActivityRefresh()
+    }
   }
 
   // Implicit-engine pattern: this fires AFTER the Flutter engine is
@@ -89,6 +112,19 @@ import ActivityKit
     ActivityAuthorizationInfo().areActivitiesEnabled
   }
 
+  /// Activities still updateable by the app. iOS keeps system-ended /
+  /// user-dismissed activities in `Activity.activities` for hours after
+  /// they stop being visible; without filtering, the start/update path
+  /// would call `update(...)` on a dead activity (silent no-op) and
+  /// never recreate a visible one — that's what made the Live Activity
+  /// "disappear" overnight until the user toggled the setting off/on.
+  @available(iOS 16.1, *)
+  private func liveActivities() -> [Activity<PrayerActivityAttributes>] {
+    Activity<PrayerActivityAttributes>.activities.filter {
+      $0.activityState != .ended && $0.activityState != .dismissed
+    }
+  }
+
   @available(iOS 16.1, *)
   private func startLiveActivity(arguments: Any?, result: @escaping FlutterResult) {
     guard liveActivitiesEnabled() else {
@@ -106,8 +142,12 @@ import ActivityKit
 
     let stale = nextPrayerDate(state)
 
-    // If an activity already exists, update instead of creating a duplicate.
-    if let existing = Activity<PrayerActivityAttributes>.activities.first {
+    // If a live (non-ended/dismissed) activity already exists, update
+    // instead of creating a duplicate. Filtering by activityState here
+    // is what lets the app recreate the activity after iOS auto-ends it
+    // (e.g. the 8h-no-update staleness limit) without the user having
+    // to toggle the setting off and on.
+    if let existing = liveActivities().first {
       Task {
         if #available(iOS 16.2, *) {
           await existing.update(
@@ -153,8 +193,9 @@ import ActivityKit
       result(FlutterError(code: "BAD_ARGS", message: "Invalid state payload", details: nil))
       return
     }
-    let activities = Activity<PrayerActivityAttributes>.activities
+    let activities = liveActivities()
     guard !activities.isEmpty else {
+      // No updateable activity → tell Flutter to fall through to start.
       result(false)
       return
     }
@@ -237,5 +278,79 @@ import ActivityKit
       .filter { $0 > now }
       .min()
     return future ?? state.nextPrayerTime
+  }
+
+  // MARK: - Background refresh
+
+  /// Asks iOS for a future background slot to re-push the Live Activity
+  /// so its view recomputes from a fresh `Date()`. Without this, the
+  /// timeline marker and active-prayer banner freeze at the last render
+  /// time while the phone is locked overnight (the big H:MM:SS
+  /// countdown keeps ticking on its own — only the schedule-derived
+  /// view elements freeze). iOS decides when to actually run the task
+  /// based on user habits, battery, and system load; we treat it as
+  /// best-effort and rely on the next app open as the fallback.
+  @available(iOS 16.1, *)
+  private func scheduleLiveActivityRefresh() {
+    // No point asking iOS for a refresh slot if no activity is live.
+    guard !liveActivities().isEmpty else { return }
+    let request = BGAppRefreshTaskRequest(
+      identifier: Self.liveActivityRefreshIdentifier
+    )
+    // Earliest in 30 minutes — iOS treats this as a floor and may
+    // delay further. Chaining (we re-submit after each run) approximates
+    // periodic refresh through the night.
+    request.earliestBeginDate = Date(timeIntervalSinceNow: 30 * 60)
+    do {
+      try BGTaskScheduler.shared.submit(request)
+    } catch {
+      // Background App Refresh disabled by user, duplicate submission,
+      // or unsupported device. Nothing to do — the activity will refresh
+      // on next foreground.
+    }
+  }
+
+  @available(iOS 16.1, *)
+  private func handleLiveActivityRefresh(task: BGAppRefreshTask) {
+    // Reschedule before doing work — iOS allows only one in-flight task
+    // per identifier, so resubmitting here keeps the chain going.
+    scheduleLiveActivityRefresh()
+
+    task.expirationHandler = {
+      task.setTaskCompleted(success: false)
+    }
+
+    let activities = liveActivities()
+    if activities.isEmpty {
+      task.setTaskCompleted(success: true)
+      return
+    }
+
+    Task {
+      for activity in activities {
+        let currentState: PrayerActivityAttributes.ContentState
+        if #available(iOS 16.2, *) {
+          currentState = activity.content.state
+        } else {
+          currentState = activity.contentState
+        }
+        // Re-pushing the same content forces iOS to re-render the view
+        // body; scheduleActive / scheduleNext / DayTimelineView all call
+        // Date() at render time, so the marker, active-prayer banner,
+        // and "next prayer" line all advance to the correct values for
+        // the current wall clock without needing a server push.
+        let stale = nextPrayerDate(currentState)
+        if #available(iOS 16.2, *) {
+          await activity.update(
+            ActivityContent(state: currentState, staleDate: stale)
+          )
+        } else {
+          await activity.update(using: currentState)
+        }
+      }
+      await MainActor.run {
+        task.setTaskCompleted(success: true)
+      }
+    }
   }
 }
