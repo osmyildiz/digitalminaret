@@ -105,4 +105,14 @@ class StorageService {
     final prefs = await _prefs;
     return prefs.getInt(AppConstants.timezoneOffsetMinutesKey);
   }
+
+  Future<int> getLastSeenOnboardingVersion() async {
+    final prefs = await _prefs;
+    return prefs.getInt(AppConstants.lastSeenOnboardingVersionKey) ?? 0;
+  }
+
+  Future<void> setLastSeenOnboardingVersion(int version) async {
+    final prefs = await _prefs;
+    await prefs.setInt(AppConstants.lastSeenOnboardingVersionKey, version);
+  }
 }

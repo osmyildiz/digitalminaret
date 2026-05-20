@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "پخش اذان کامل با لمس اعلان",
   "playDuaAfterAdhan": "پخش دعا بعد از اذان",
+  "lockScreenTimeline": "جدول زمانی نماز در صفحه قفل",
   "adhanPackLabel": "بسته اذان: {packName}",
   "adhanPacks": "بسته‌های اذان",
   "downloadAdhanPack": "دانلود بسته اذان",

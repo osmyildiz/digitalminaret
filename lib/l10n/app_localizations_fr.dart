@@ -212,7 +212,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get playDuaAfterAdhan => 'Lire le doua après l\'adhan';
 
   @override
-  String get lockScreenTimeline => 'Lock screen prayer timeline';
+  String get lockScreenTimeline => 'Chronologie des prières sur l\'écran verrouillé';
 
   @override
   String adhanPackLabel(String packName) {

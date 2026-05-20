@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "通知タップでフルアザーン再生",
   "playDuaAfterAdhan": "アザーン後にドゥアーを再生",
+  "lockScreenTimeline": "ロック画面の礼拝タイムライン",
   "adhanPackLabel": "アザーンパック: {packName}",
   "adhanPacks": "アザーンパック",
   "downloadAdhanPack": "アザーンパックをダウンロード",

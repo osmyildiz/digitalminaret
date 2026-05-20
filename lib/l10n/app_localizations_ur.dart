@@ -210,7 +210,7 @@ class AppLocalizationsUr extends AppLocalizations {
   String get playDuaAfterAdhan => 'اذان کے بعد دعا سنائیں';
 
   @override
-  String get lockScreenTimeline => 'Lock screen prayer timeline';
+  String get lockScreenTimeline => 'لاک اسکرین نماز ٹائم لائن';
 
   @override
   String adhanPackLabel(String packName) {

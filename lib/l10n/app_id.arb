@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "Adzan lengkap saat mengetuk notifikasi",
   "playDuaAfterAdhan": "Putar doa setelah adzan",
+  "lockScreenTimeline": "Linimasa salat di layar kunci",
   "adhanPackLabel": "Paket Adzan: {packName}",
   "adhanPacks": "Paket Adzan",
   "downloadAdhanPack": "Unduh Paket Adzan",

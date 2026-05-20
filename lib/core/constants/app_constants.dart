@@ -10,6 +10,13 @@ class AppConstants {
   static const String appOpenCountKey = 'app_open_count';
   static const String hasRatedKey = 'has_rated';
   static const String timezoneOffsetMinutesKey = 'timezone_offset_minutes';
+  static const String lastSeenOnboardingVersionKey =
+      'last_seen_onboarding_version';
+
+  // Bump when onboarding content changes meaningfully. Users whose stored
+  // version is below this re-see onboarding once on their next launch
+  // (existing location / settings are preserved).
+  static const int currentOnboardingVersion = 1;
 
   static const int ratePromptFirstOpen = 11;
   static const int ratePromptInterval = 11;

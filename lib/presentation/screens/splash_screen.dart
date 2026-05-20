@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/utils/locale_defaults.dart';
 import '../../core/utils/logger.dart';
 import '../../data/services/notification_service.dart';
@@ -28,6 +29,10 @@ class _SplashScreenState extends State<SplashScreen> {
     _bootstrap();
   }
 
+  // Default true so a mid-bootstrap exception sends the user to onboarding
+  // rather than Home with a null location.
+  bool _showOnboarding = true;
+
   Future<void> _bootstrap() async {
     final storageService = StorageService();
     final settingsProvider = context.read<SettingsProvider>();
@@ -38,6 +43,8 @@ class _SplashScreenState extends State<SplashScreen> {
       await storageService.incrementAppOpenCount();
 
       final isFirstLaunch = !await storageService.hasSettingsBeenSaved();
+      final lastSeenOnboarding =
+          await storageService.getLastSeenOnboardingVersion();
       await settingsProvider.loadSettings();
 
       if (isFirstLaunch) {
@@ -53,6 +60,8 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       await locationProvider.loadLocation();
+      _showOnboarding = locationProvider.location == null ||
+          lastSeenOnboarding < AppConstants.currentOnboardingVersion;
       if (locationProvider.location != null) {
         prayerProvider.setLocale(settingsProvider.settings.locale);
         prayerProvider.setLiveActivityEnabled(
@@ -88,12 +97,15 @@ class _SplashScreenState extends State<SplashScreen> {
         // checks the App Store / Play Store on launch and shows an
         // "update available" dialog when a newer version is published.
         // First-run users (onboarding) already have the latest build.
-        builder: (_) => locationProvider.location == null
+        builder: (_) => _showOnboarding
             ? const OnboardingScreen()
             : UpgradeAlert(
                 upgrader: Upgrader(
                   durationUntilAlertAgain: const Duration(days: 1),
                 ),
+                dialogStyle: UpgradeDialogStyle.cupertino,
+                showReleaseNotes: false,
+                showIgnore: false,
                 child: const HomeScreen(),
               ),
       ),

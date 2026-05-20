@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "تشغيل الأذان الكامل عند الضغط على الإشعار",
   "playDuaAfterAdhan": "تشغيل الدعاء بعد الأذان",
+  "lockScreenTimeline": "جدول الصلاة على شاشة القفل",
   "adhanPackLabel": "حزمة الأذان: {packName}",
   "adhanPacks": "حزم الأذان",
   "downloadAdhanPack": "تحميل حزمة الأذان",

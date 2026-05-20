@@ -206,7 +206,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get playDuaAfterAdhan => 'アザーン後にドゥアーを再生';
 
   @override
-  String get lockScreenTimeline => 'Lock screen prayer timeline';
+  String get lockScreenTimeline => 'ロック画面の礼拝タイムライン';
 
   @override
   String adhanPackLabel(String packName) {

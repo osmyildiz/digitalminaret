@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "Adhan complet en appuyant sur la notification",
   "playDuaAfterAdhan": "Lire le doua après l'adhan",
+  "lockScreenTimeline": "Chronologie des prières sur l'écran verrouillé",
   "adhanPackLabel": "Pack d'adhan : {packName}",
   "adhanPacks": "Packs d'adhan",
   "downloadAdhanPack": "Télécharger le pack d'adhan",

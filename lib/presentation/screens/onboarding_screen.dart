@@ -3,9 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/adhan_packs.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/enums/calculation_method.dart';
 import '../../core/enums/madhab.dart';
 import '../../data/services/notification_service.dart';
+import '../../data/services/storage_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/prayer_provider.dart';
 import '../providers/settings_provider.dart';
@@ -368,6 +370,9 @@ class OnboardingScreen extends StatelessWidget {
                               }
                             }
                           }
+                          await StorageService().setLastSeenOnboardingVersion(
+                            AppConstants.currentOnboardingVersion,
+                          );
                           if (!context.mounted) {
                             return;
                           }

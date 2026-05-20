@@ -78,6 +78,7 @@
 
   "fullAdhanOnNotificationTap": "نوٹیفکیشن پر ٹیپ کرنے سے مکمل اذان",
   "playDuaAfterAdhan": "اذان کے بعد دعا سنائیں",
+  "lockScreenTimeline": "لاک اسکرین نماز ٹائم لائن",
   "adhanPackLabel": "اذان پیک: {packName}",
   "adhanPacks": "اذان پیکس",
   "downloadAdhanPack": "اذان پیک ڈاؤن لوڈ کریں",
