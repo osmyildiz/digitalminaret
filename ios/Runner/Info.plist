@@ -90,6 +90,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.osmyildiz.digitalminaret.liveactivity_refresh</string>
+		<string>com.osmyildiz.digitalminaret.liveactivity_overnight</string>
 	</array>
 </dict>
 </plist>

@@ -11,6 +11,13 @@ import BackgroundTasks
   private static let liveActivityChannelName = "com.osmyildiz.digitalminaret/live_activity"
   private static let liveActivityRefreshIdentifier =
     "com.osmyildiz.digitalminaret.liveactivity_refresh"
+  // BGProcessingTask companion to the BGAppRefreshTask above. iOS treats
+  // these as separate task pools and may run one even when it skips the
+  // other; registering both maximises the chance of getting at least one
+  // background refresh overnight, when most users have the phone idle
+  // and on a charger (matches BGProcessingTask's preferred conditions).
+  private static let liveActivityOvernightIdentifier =
+    "com.osmyildiz.digitalminaret.liveactivity_overnight"
   // Retained so ARC doesn't release the channel — FlutterMethodChannel
   // holds its handler weakly via the binary messenger.
   private static var retainedLiveActivityChannel: FlutterMethodChannel?
@@ -35,6 +42,12 @@ import BackgroundTasks
       ) { task in
         self.handleLiveActivityRefresh(task: task as! BGAppRefreshTask)
       }
+      BGTaskScheduler.shared.register(
+        forTaskWithIdentifier: Self.liveActivityOvernightIdentifier,
+        using: nil
+      ) { task in
+        self.handleLiveActivityOvernight(task: task as! BGProcessingTask)
+      }
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -44,6 +57,7 @@ import BackgroundTasks
     super.applicationDidEnterBackground(application)
     if #available(iOS 16.1, *) {
       scheduleLiveActivityRefresh()
+      scheduleLiveActivityOvernight()
     }
   }
 
@@ -339,6 +353,75 @@ import BackgroundTasks
         // Date() at render time, so the marker, active-prayer banner,
         // and "next prayer" line all advance to the correct values for
         // the current wall clock without needing a server push.
+        let stale = nextPrayerDate(currentState)
+        if #available(iOS 16.2, *) {
+          await activity.update(
+            ActivityContent(state: currentState, staleDate: stale)
+          )
+        } else {
+          await activity.update(using: currentState)
+        }
+      }
+      await MainActor.run {
+        task.setTaskCompleted(success: true)
+      }
+    }
+  }
+
+  /// Companion to scheduleLiveActivityRefresh. BGProcessingTask gives us
+  /// a longer execution window (~1 minute) and is preferentially fired by
+  /// iOS when the phone is idle and on a charger — the exact conditions
+  /// that produced the overnight freeze before this fix, since most
+  /// prayer-app users sleep with the phone charging. Both task types are
+  /// chained: whichever iOS happens to fire keeps the Live Activity
+  /// fresh, and the next submission queues another window.
+  @available(iOS 16.1, *)
+  private func scheduleLiveActivityOvernight() {
+    guard !liveActivities().isEmpty else { return }
+    let request = BGProcessingTaskRequest(
+      identifier: Self.liveActivityOvernightIdentifier
+    )
+    // Earliest in 2 hours — a BGProcessingTask is meant for less frequent,
+    // longer work than BGAppRefreshTask. We mostly want one good run
+    // during the overnight Isha→Fajr stretch, not constant polling.
+    request.earliestBeginDate = Date(timeIntervalSinceNow: 2 * 60 * 60)
+    // Don't gate on the charger — many users sleep without plugging in.
+    // iOS still strongly prefers to run BGProcessingTask while charging
+    // when possible, so leaving this false gets the best of both worlds.
+    request.requiresExternalPower = false
+    request.requiresNetworkConnectivity = false
+    do {
+      try BGTaskScheduler.shared.submit(request)
+    } catch {
+      // Same fall-through as scheduleLiveActivityRefresh: BAR disabled,
+      // duplicate submission, or unsupported. The other task type may
+      // still fire, and the next foreground re-pushes anyway.
+    }
+  }
+
+  @available(iOS 16.1, *)
+  private func handleLiveActivityOvernight(task: BGProcessingTask) {
+    // Same chaining and refresh logic as the BGAppRefreshTask handler.
+    scheduleLiveActivityOvernight()
+
+    task.expirationHandler = {
+      task.setTaskCompleted(success: false)
+    }
+
+    let activities = liveActivities()
+    if activities.isEmpty {
+      task.setTaskCompleted(success: true)
+      return
+    }
+
+    Task {
+      for activity in activities {
+        let currentState: PrayerActivityAttributes.ContentState
+        if #available(iOS 16.2, *) {
+          currentState = activity.content.state
+        } else {
+          currentState = activity.contentState
+        }
         let stale = nextPrayerDate(currentState)
         if #available(iOS 16.2, *) {
           await activity.update(
