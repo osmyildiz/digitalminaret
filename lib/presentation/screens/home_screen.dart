@@ -77,16 +77,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _showWhatsNewSheet() async {
     if (!mounted) return;
+    // Persist BEFORE showing so the tour is treated as "seen" the
+    // moment we commit to displaying it. Persisting only after
+    // dismissal meant users who force-quit the app while the tour was
+    // open (a common reflex on a surprise popup) never wrote the
+    // version flag, so the tour kept reappearing every launch.
+    await _storageService.setLastSeenOnboardingVersion(
+      AppConstants.currentOnboardingVersion,
+    );
+    if (!mounted) return;
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.72),
       builder: (_) => const WhatsNewTour(),
-    );
-    // Persist regardless of dismissal mode so the dialog never appears
-    // twice for the same announcement version.
-    await _storageService.setLastSeenOnboardingVersion(
-      AppConstants.currentOnboardingVersion,
     );
   }
 
