@@ -175,29 +175,50 @@ import BackgroundTasks
       return
     }
 
-    do {
-      let attrs = PrayerActivityAttributes(widgetKind: "PrayerLiveActivity")
-      let activity: Activity<PrayerActivityAttributes>
-      if #available(iOS 16.2, *) {
-        activity = try Activity<PrayerActivityAttributes>.request(
-          attributes: attrs,
-          content: ActivityContent(state: state, staleDate: stale),
-          pushType: nil
-        )
-      } else {
-        activity = try Activity<PrayerActivityAttributes>.request(
-          attributes: attrs,
-          contentState: state,
-          pushType: nil
-        )
+    // No updateable activity → we're about to create a fresh one. But
+    // iOS keeps .ended / .dismissed activities visible on the lock
+    // screen for up to ~4h after they finish (default dismissal
+    // policy), which is exactly what produced the "two Live Activities
+    // stacked at morning" bug: the overnight one auto-ended due to
+    // staleness, stayed pinned to the lock screen, and the fresh
+    // morning activity drew a second card right next to it. Walk the
+    // unfiltered activity list and force-dismiss any leftovers BEFORE
+    // requesting the new one so only one card is ever visible.
+    let leftovers = Activity<PrayerActivityAttributes>.activities
+    let pendingDismissals: [Activity<PrayerActivityAttributes>] = leftovers.filter {
+      $0.activityState == .ended || $0.activityState == .dismissed
+    }
+
+    Task {
+      for leftover in pendingDismissals {
+        await leftover.end(dismissalPolicy: .immediate)
       }
-      result(activity.id)
-    } catch {
-      result(FlutterError(
-        code: "START_FAILED",
-        message: "ActivityKit refused the request: \(error.localizedDescription)",
-        details: nil
-      ))
+      do {
+        let attrs = PrayerActivityAttributes(widgetKind: "PrayerLiveActivity")
+        let activity: Activity<PrayerActivityAttributes>
+        if #available(iOS 16.2, *) {
+          activity = try Activity<PrayerActivityAttributes>.request(
+            attributes: attrs,
+            content: ActivityContent(state: state, staleDate: stale),
+            pushType: nil
+          )
+        } else {
+          activity = try Activity<PrayerActivityAttributes>.request(
+            attributes: attrs,
+            contentState: state,
+            pushType: nil
+          )
+        }
+        await MainActor.run { result(activity.id) }
+      } catch {
+        await MainActor.run {
+          result(FlutterError(
+            code: "START_FAILED",
+            message: "ActivityKit refused the request: \(error.localizedDescription)",
+            details: nil
+          ))
+        }
+      }
     }
   }
 
