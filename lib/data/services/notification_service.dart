@@ -11,6 +11,7 @@ import '../../core/enums/calculation_method.dart';
 import '../../core/enums/madhab.dart';
 import '../../core/enums/prayer_alert_mode.dart';
 import '../../core/enums/prayer_type.dart';
+import '../../core/rules/tashreeq_rules.dart';
 import '../models/prayer_times_model.dart';
 import '../models/settings_model.dart';
 import 'adhan_service.dart';
@@ -34,17 +35,9 @@ class NotificationService {
   /// per day.
   static const String _lastRescheduleKey = 'notif_last_full_reschedule_v1';
 
-  /// How far ahead to pre-schedule on a normal day. Bounded by iOS's hard
-  /// 64-pending-notification cap: 5 days × 6 prayers × 2 (reminder+actual)
-  /// = 60 + 1 Jumuah = 61, leaving headroom.
-  static const int _normalDaysAhead = 5;
-
-  /// During Tashreeq (Zilhicce 9–13) every prayer also gets a +10 min
-  /// Tashreeq takbir reminder. Worst-case 5 prayers × 3 days of Tashreeq
-  /// stacks on top of the regular notifications, so we drop the pre-schedule
-  /// window from 5 → 3 days during that period to stay under 64.
-  /// 3 days × (12 prayer + ~5 Tashreeq) + 1 Jumuah ≈ 52 notifications.
-  static const int _tashreeqDaysAhead = 3;
+  // Pre-schedule window sizes (normal vs Tashreeq period) live in
+  // TashreeqRules so they can be unit-tested independently of this
+  // class's plugin / SharedPreferences dependencies.
 
   /// Localized notification strings per locale.
   static const Map<String, Map<String, String>> _strings = {
@@ -242,12 +235,18 @@ class NotificationService {
     await cancelAllNotifications();
 
     // Window size depends on whether we're in the Tashreeq period
-    // (Zilhicce 9–13). Outside it, 5 days. Inside, 3 days so the extra
-    // Tashreeq notifications fit under iOS's 64 cap.
+    // (Zilhicce 8–13). Outside it, 5 days. Inside, 3 days so the extra
+    // Tashreeq notifications fit under iOS's 64 cap. See TashreeqRules
+    // for the budget arithmetic.
     final todayHijri = _gregorianToHijri(times.date);
-    final inTashreeqPeriod =
-        todayHijri.month == 12 && todayHijri.day >= 8 && todayHijri.day <= 13;
-    final daysAhead = inTashreeqPeriod ? _tashreeqDaysAhead : _normalDaysAhead;
+    final daysAhead = TashreeqRules.windowDaysAhead(
+      hijriMonth: todayHijri.month,
+      hijriDay: todayHijri.day,
+    );
+    final inTashreeqPeriod = TashreeqRules.isInTashreeqPeriod(
+      hijriMonth: todayHijri.month,
+      hijriDay: todayHijri.day,
+    );
     debugPrint(
       '[Notifications] reschedule window=$daysAhead days '
       '(tashreeq=$inTashreeqPeriod hijri=${todayHijri.day}/${todayHijri.month})',
@@ -417,8 +416,12 @@ class NotificationService {
           playAdhanOnTap: true,
         );
       }
-      if (_shouldScheduleTashreeq(hijri: hijri, prayerType: entry.key) &&
-          tashreeqTime.isAfter(now)) {
+      final tashreeqWanted = TashreeqRules.shouldScheduleTashreeq(
+        hijriMonth: hijri.month,
+        hijriDay: hijri.day,
+        prayerType: entry.key,
+      );
+      if (tashreeqWanted && tashreeqTime.isAfter(now)) {
         await _scheduleOneShot(
           id: _tashreeqIdFor(entry.key, dayOffset),
           scheduledTime: tashreeqTime,
@@ -702,30 +705,8 @@ class NotificationService {
     }
   }
 
-  bool _shouldScheduleTashreeq({
-    required _HijriDate hijri,
-    required PrayerType prayerType,
-  }) {
-    if (hijri.month != 12) {
-      return false;
-    }
-
-    if (hijri.day < 9 || hijri.day > 13) {
-      return false;
-    }
-
-    if (hijri.day == 9) {
-      return prayerType != PrayerType.sunrise;
-    }
-
-    if (hijri.day == 13) {
-      return prayerType == PrayerType.fajr ||
-          prayerType == PrayerType.dhuhr ||
-          prayerType == PrayerType.asr;
-    }
-
-    return prayerType != PrayerType.sunrise;
-  }
+  // Tashreeq scheduling decision moved to TashreeqRules so it can be
+  // unit-tested without standing up a NotificationService instance.
 
   Future<void> _scheduleJumuahMubarakNotification(String locale) async {
     final now = tz.TZDateTime.now(tz.local);
