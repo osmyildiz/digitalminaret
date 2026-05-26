@@ -7,18 +7,44 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../core/utils/adhan_playback_bus.dart';
 import '../../core/constants/notification_ids.dart';
+import '../../core/enums/calculation_method.dart';
+import '../../core/enums/madhab.dart';
 import '../../core/enums/prayer_alert_mode.dart';
 import '../../core/enums/prayer_type.dart';
 import '../models/prayer_times_model.dart';
 import '../models/settings_model.dart';
+import 'adhan_service.dart';
 
 class NotificationService {
-  NotificationService._internal({FlutterLocalNotificationsPlugin? plugin})
-    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  NotificationService._internal({
+    FlutterLocalNotificationsPlugin? plugin,
+    AdhanService? adhanService,
+  })  : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
+        _adhanService = adhanService ?? AdhanService();
 
   static final NotificationService _instance = NotificationService._internal();
 
   factory NotificationService() => _instance;
+
+  final AdhanService _adhanService;
+
+  /// SharedPreferences key holding the date+location of the last successful
+  /// full reschedule. Used to short-circuit repeated calls on the same day
+  /// (e.g. multiple foregroundings) so we only do the heavy 5-day write once
+  /// per day.
+  static const String _lastRescheduleKey = 'notif_last_full_reschedule_v1';
+
+  /// How far ahead to pre-schedule on a normal day. Bounded by iOS's hard
+  /// 64-pending-notification cap: 5 days × 6 prayers × 2 (reminder+actual)
+  /// = 60 + 1 Jumuah = 61, leaving headroom.
+  static const int _normalDaysAhead = 5;
+
+  /// During Tashreeq (Zilhicce 9–13) every prayer also gets a +10 min
+  /// Tashreeq takbir reminder. Worst-case 5 prayers × 3 days of Tashreeq
+  /// stacks on top of the regular notifications, so we drop the pre-schedule
+  /// window from 5 → 3 days during that period to stay under 64.
+  /// 3 days × (12 prayer + ~5 Tashreeq) + 1 Jumuah ≈ 52 notifications.
+  static const int _tashreeqDaysAhead = 3;
 
   /// Localized notification strings per locale.
   static const Map<String, Map<String, String>> _strings = {
@@ -174,54 +200,215 @@ class NotificationService {
     return granted;
   }
 
+  /// Pre-schedules prayer / reminder / Tashreeq notifications for the next
+  /// N days. Idempotent within a single calendar day at the same location:
+  /// repeated calls on the same day are skipped unless [forceRefresh] is set.
+  ///
+  /// Why this exists: the OS notification queue is one-shot — once a
+  /// scheduled notification fires, it's gone, and iOS gives no reliable
+  /// daily background-execution slot for re-scheduling. Pre-writing 5
+  /// days at every fresh app open turns "user must open daily" into
+  /// "user must open every 5 days" (or 3 days during Tashreeq, where the
+  /// extra Tashreeq notifications eat into the 64-pending iOS budget).
+  ///
+  /// [forceRefresh] = true when settings or location change, so we always
+  /// clear and rewrite even if we already wrote earlier today.
   Future<void> scheduleAllPrayerNotifications(
     PrayerTimesModel times,
-    SettingsModel settings,
-  ) async {
+    SettingsModel settings, {
+    bool forceRefresh = false,
+  }) async {
     if (!settings.notificationsEnabled) {
       await cancelAllNotifications();
       return;
     }
 
+    // Idempotency: skip if we already wrote for today at this location.
+    // Location is included so a trip (Istanbul → New York) invalidates
+    // the cache automatically — same calendar day, different prayer times.
+    final scheduleKey = _scheduleKey(times);
+    if (!forceRefresh) {
+      final prefs = await SharedPreferences.getInstance();
+      final lastKey = prefs.getString(_lastRescheduleKey);
+      if (lastKey == scheduleKey) {
+        debugPrint('[Notifications] skip reschedule — already done for $scheduleKey');
+        return;
+      }
+    }
+
+    // Clear the entire queue and rewrite from scratch. Cheaper and
+    // simpler than diffing per-ID; flutter_local_notifications handles
+    // cancelAll quickly.
+    await cancelAllNotifications();
+
+    // Window size depends on whether we're in the Tashreeq period
+    // (Zilhicce 9–13). Outside it, 5 days. Inside, 3 days so the extra
+    // Tashreeq notifications fit under iOS's 64 cap.
+    final todayHijri = _gregorianToHijri(times.date);
+    final inTashreeqPeriod =
+        todayHijri.month == 12 && todayHijri.day >= 8 && todayHijri.day <= 13;
+    final daysAhead = inTashreeqPeriod ? _tashreeqDaysAhead : _normalDaysAhead;
+    debugPrint(
+      '[Notifications] reschedule window=$daysAhead days '
+      '(tashreeq=$inTashreeqPeriod hijri=${todayHijri.day}/${todayHijri.month})',
+    );
+
+    // Walk each day in the window. Day 0 is the caller-provided times;
+    // future days are computed from the same location / method / madhab
+    // stored on the model.
+    for (var dayOffset = 0; dayOffset < daysAhead; dayOffset++) {
+      final dayTimes = dayOffset == 0
+          ? times
+          : _tryComputeFutureDay(times, dayOffset);
+      if (dayTimes == null) {
+        debugPrint(
+          '[Notifications] skipping day +$dayOffset — could not compute times',
+        );
+        continue;
+      }
+      await _scheduleSingleDay(
+        dayTimes: dayTimes,
+        dayOffset: dayOffset,
+        settings: settings,
+      );
+    }
+
+    // Jumuah Mubarak fires on the next Friday at 10:00 regardless of
+    // the schedule window, so it's outside the per-day loop and uses
+    // a single fixed ID. (Future improvement: pre-write multiple
+    // Fridays, but one is enough — Jumuah will reschedule itself on
+    // the next app open.)
+    await _scheduleJumuahMubarakNotification(settings.locale);
+
+    // Persist the marker so same-day re-entries short-circuit.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastRescheduleKey, scheduleKey);
+  }
+
+  /// Composite key combining the calendar date and rough location. Two
+  /// fresh installs at the same lat/lon on the same date produce the
+  /// same key; a flight to a different city produces a different one.
+  String _scheduleKey(PrayerTimesModel times) {
+    final d = times.date;
+    final dateStr =
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    // Round lat/lon to 1 decimal — enough to invalidate on city change,
+    // not so tight that GPS noise flaps the key for a stationary user.
+    final lat = times.latitude?.toStringAsFixed(1) ?? '?';
+    final lon = times.longitude?.toStringAsFixed(1) ?? '?';
+    return '$dateStr|$lat,$lon';
+  }
+
+  /// Recompute prayer times for [today.date + dayOffset days] using the
+  /// same lat/lon/method/madhab embedded in [today]. Returns null if any
+  /// required field is missing — the caller then skips that day.
+  PrayerTimesModel? _tryComputeFutureDay(
+    PrayerTimesModel today,
+    int dayOffset,
+  ) {
+    final lat = today.latitude;
+    final lon = today.longitude;
+    final methodName = today.calculationMethodName;
+    final madhabName = today.madhabName;
+    if (lat == null || lon == null || methodName == null || madhabName == null) {
+      return null;
+    }
+
+    CalculationMethod? method;
+    Madhab? madhab;
+    for (final m in CalculationMethod.values) {
+      if (m.name == methodName) {
+        method = m;
+        break;
+      }
+    }
+    for (final m in Madhab.values) {
+      if (m.name == madhabName) {
+        madhab = m;
+        break;
+      }
+    }
+    if (method == null || madhab == null) {
+      return null;
+    }
+
+    final futureDate = today.date.add(Duration(days: dayOffset));
+    try {
+      return _adhanService.calculatePrayerTimes(
+        latitude: lat,
+        longitude: lon,
+        date: futureDate,
+        method: method,
+        madhab: madhab,
+        locationName: today.locationName,
+      );
+    } catch (error) {
+      debugPrint(
+        '[Notifications] future-day calc failed for +$dayOffset: $error',
+      );
+      return null;
+    }
+  }
+
+  /// Schedules one day's worth of prayer reminders + actual + Tashreeq
+  /// notifications. Skips any notification whose scheduled time is in
+  /// the past (so the same call works whether we're rewriting at 6 AM
+  /// or 11 PM — past slots are simply omitted, not bumped to tomorrow).
+  Future<void> _scheduleSingleDay({
+    required PrayerTimesModel dayTimes,
+    required int dayOffset,
+    required SettingsModel settings,
+  }) async {
     final locale = settings.locale;
     final names = _localizedPrayerNames[locale] ?? _localizedPrayerNames['en']!;
+    final hijri = _gregorianToHijri(dayTimes.date);
+    final isRamadan = hijri.month == 9;
+    final now = DateTime.now();
 
     final map = <PrayerType, DateTime>{
-      PrayerType.fajr: times.fajr,
-      PrayerType.sunrise: times.sunrise,
-      PrayerType.dhuhr: times.dhuhr,
-      PrayerType.asr: times.asr,
-      PrayerType.maghrib: times.maghrib,
-      PrayerType.isha: times.isha,
+      PrayerType.fajr: dayTimes.fajr,
+      PrayerType.sunrise: dayTimes.sunrise,
+      PrayerType.dhuhr: dayTimes.dhuhr,
+      PrayerType.asr: dayTimes.asr,
+      PrayerType.maghrib: dayTimes.maghrib,
+      PrayerType.isha: dayTimes.isha,
     };
-    final hijri = _gregorianToHijri(times.date);
-    final isRamadan = hijri.month == 9;
 
     for (final entry in map.entries) {
-      final mode =
-          settings.prayerAlertModes[entry.key] ??
+      final mode = settings.prayerAlertModes[entry.key] ??
           ((settings.enabledPrayers[entry.key] ?? true)
               ? PrayerAlertMode.sound
               : PrayerAlertMode.off);
-      if (mode != PrayerAlertMode.off) {
-        final prayerName = _localizedNotificationPrayerName(
-          prayerType: entry.key,
-          prayerTime: entry.value,
-          names: names,
-          isRamadan: isRamadan,
-          locale: locale,
-        );
-        await scheduleSingleNotification(
-          id: _notificationReminderIdFor(entry.key),
-          scheduledTime: entry.value.subtract(const Duration(minutes: 15)),
+      if (mode == PrayerAlertMode.off) continue;
+
+      final prayerName = _localizedNotificationPrayerName(
+        prayerType: entry.key,
+        prayerTime: entry.value,
+        names: names,
+        isRamadan: isRamadan,
+        locale: locale,
+      );
+
+      final reminderTime = entry.value.subtract(const Duration(minutes: 15));
+      final tashreeqTime = entry.value.add(const Duration(minutes: 10));
+
+      // -15 min reminder: critical UX ("the current prayer window is
+      // about to close — last chance to pray Asr before Maghrib", etc.)
+      // so we keep it even for far-future days. Past times are skipped.
+      if (reminderTime.isAfter(now)) {
+        await _scheduleOneShot(
+          id: _reminderIdFor(entry.key, dayOffset),
+          scheduledTime: reminderTime,
           title: _str(locale, 'in_minutes', prayer: prayerName),
           body: _str(locale, 'prepare'),
           alertMode: mode,
           prayerType: entry.key,
           playAdhanOnTap: false,
         );
-        await scheduleSingleNotification(
-          id: _notificationIdFor(entry.key),
+      }
+      if (entry.value.isAfter(now)) {
+        await _scheduleOneShot(
+          id: _prayerIdFor(entry.key, dayOffset),
           scheduledTime: entry.value,
           title: _str(locale, 'time', prayer: prayerName),
           body: _str(locale, 'started'),
@@ -229,22 +416,110 @@ class NotificationService {
           prayerType: entry.key,
           playAdhanOnTap: true,
         );
-
-        if (_shouldScheduleTashreeq(hijri: hijri, prayerType: entry.key)) {
-          await scheduleSingleNotification(
-            id: _notificationTashreeqIdFor(entry.key),
-            scheduledTime: entry.value.add(const Duration(minutes: 10)),
-            title: '✨ ${_str(locale, 'tashreeq_title')} ✨',
-            body: _str(locale, 'tashreeq_body'),
-            alertMode: mode,
-            prayerType: entry.key,
-            playAdhanOnTap: false,
-          );
-        }
+      }
+      if (_shouldScheduleTashreeq(hijri: hijri, prayerType: entry.key) &&
+          tashreeqTime.isAfter(now)) {
+        await _scheduleOneShot(
+          id: _tashreeqIdFor(entry.key, dayOffset),
+          scheduledTime: tashreeqTime,
+          title: '✨ ${_str(locale, 'tashreeq_title')} ✨',
+          body: _str(locale, 'tashreeq_body'),
+          alertMode: mode,
+          prayerType: entry.key,
+          playAdhanOnTap: false,
+        );
       }
     }
+  }
 
-    await _scheduleJumuahMubarakNotification(locale);
+  /// Stride between consecutive days in the notification ID space. Each
+  /// day's IDs sit 10 apart so day 0 fajr = 1, day 1 fajr = 11, etc.
+  /// Range used: 1..146 (prayer) + 800..846 (Tashreeq), well within the
+  /// 32-bit id space and never colliding with Jumuah (700).
+  static const int _dayIdStride = 10;
+
+  int _prayerIdFor(PrayerType type, int dayOffset) =>
+      _notificationIdFor(type) + dayOffset * _dayIdStride;
+
+  int _reminderIdFor(PrayerType type, int dayOffset) =>
+      _notificationReminderIdFor(type) + dayOffset * _dayIdStride;
+
+  int _tashreeqIdFor(PrayerType type, int dayOffset) =>
+      _notificationTashreeqIdFor(type) + dayOffset * _dayIdStride;
+
+  /// Variant of [scheduleSingleNotification] that assumes the caller has
+  /// already verified scheduledTime is in the future. Skips the
+  /// past-time → +1 day bumping that the legacy single-day path used,
+  /// because in the multi-day world a "past" slot just means that day
+  /// has already gone by, not that we want to silently shift it forward.
+  Future<void> _scheduleOneShot({
+    required int id,
+    required DateTime scheduledTime,
+    required String title,
+    required String body,
+    required PrayerAlertMode alertMode,
+    required PrayerType prayerType,
+    bool playAdhanOnTap = true,
+  }) async {
+    final schedule = tz.TZDateTime.from(scheduledTime, tz.local);
+    debugPrint(
+      '[Notifications] schedule id=$id at=$schedule '
+      'mode=$alertMode prayer=${prayerType.name}',
+    );
+    final shouldPlaySound = alertMode == PrayerAlertMode.sound;
+    final shouldVibrate = alertMode == PrayerAlertMode.vibrate ||
+        alertMode == PrayerAlertMode.sound;
+
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'prayer_channel',
+        'Prayer Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: shouldPlaySound,
+        enableVibration: shouldVibrate,
+        silent: alertMode == PrayerAlertMode.silent,
+        icon: 'ic_launcher',
+        largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
+      ),
+      iOS: DarwinNotificationDetails(
+        presentSound: shouldPlaySound,
+        presentBadge: true,
+        presentAlert: true,
+        presentBanner: true,
+        presentList: true,
+      ),
+    );
+    final payload = playAdhanOnTap ? _buildPayload(prayerType) : null;
+
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        schedule,
+        details,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: payload,
+      );
+    } catch (error) {
+      debugPrint(
+        '[Notifications] exact schedule failed for id=$id, falling back. error=$error',
+      );
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        schedule,
+        details,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: payload,
+      );
+    }
   }
 
   Future<void> scheduleSingleNotification({
@@ -332,8 +607,13 @@ class NotificationService {
     AdhanPlaybackBus.playFullAdhanPrayer.value = prayerName;
   }
 
-  Future<void> cancelAllNotifications() {
-    return _plugin.cancelAll();
+  Future<void> cancelAllNotifications() async {
+    await _plugin.cancelAll();
+    // Wipe the "already rescheduled today" marker so the next call
+    // doesn't short-circuit and leave the user with no notifications
+    // after they re-enable them.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_lastRescheduleKey);
   }
 
   Future<void> showInstantTestNotification({required int id}) {

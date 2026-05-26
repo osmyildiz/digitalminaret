@@ -353,10 +353,14 @@ class OnboardingScreen extends StatelessWidget {
                           final times = prayerProvider.prayerTimes;
                           if (times != null) {
                             try {
+                              // First-time setup — force the multi-day
+                              // schedule to be written even if some prior
+                              // partial run had marked today as done.
                               await NotificationService()
                                   .scheduleAllPrayerNotifications(
                                     times,
                                     settingsSnapshot,
+                                    forceRefresh: true,
                                   );
                             } catch (error) {
                               if (context.mounted) {

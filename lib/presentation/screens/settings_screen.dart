@@ -205,9 +205,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (widget.scheduleNotifications != null) {
         await widget.scheduleNotifications!(times, settingsProvider.settings);
       } else {
+        // Location change → rewrite the whole 5-day schedule even if
+        // we already wrote earlier today; the new lat/lon means prayer
+        // times have shifted.
         await NotificationService().scheduleAllPrayerNotifications(
           times,
           settingsProvider.settings,
+          forceRefresh: true,
         );
       }
     }
@@ -222,7 +226,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (widget.scheduleNotifications != null) {
       await widget.scheduleNotifications!(times, settings);
     } else {
-      await NotificationService().scheduleAllPrayerNotifications(times, settings);
+      // Any settings toggle (alert mode, locale, calculation method,
+      // madhab, …) lands here. Always force a fresh rewrite — the
+      // previously written 5-day plan was generated against the old
+      // settings and would otherwise stay until tomorrow.
+      await NotificationService().scheduleAllPrayerNotifications(
+        times,
+        settings,
+        forceRefresh: true,
+      );
     }
   }
 

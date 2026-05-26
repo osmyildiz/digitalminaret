@@ -15,11 +15,13 @@ class NotificationRepository {
 
   Future<void> scheduleAllPrayerNotifications(
     PrayerTimesModel prayerTimes,
-    SettingsModel settings,
-  ) {
+    SettingsModel settings, {
+    bool forceRefresh = false,
+  }) {
     return _notificationService.scheduleAllPrayerNotifications(
       prayerTimes,
       settings,
+      forceRefresh: forceRefresh,
     );
   }
 

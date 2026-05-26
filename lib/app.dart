@@ -160,9 +160,13 @@ class _NotificationAudioGateState extends State<_NotificationAudioGate>
 
       final times = prayerProvider.prayerTimes;
       if (times != null) {
+        // Timezone shift (e.g. DST) → previously-written schedule is
+        // now wrong by the offset delta. Force a full rewrite even
+        // if we already wrote earlier today.
         await _notificationService.scheduleAllPrayerNotifications(
           times,
           settingsProvider.settings,
+          forceRefresh: true,
         );
       }
       debugPrint(
@@ -192,9 +196,14 @@ class _NotificationAudioGateState extends State<_NotificationAudioGate>
       prayerProvider.startCountdown();
       final times = prayerProvider.prayerTimes;
       if (times != null) {
+        // City change → lat/lon shift large enough that today's prayer
+        // times are different. Force the multi-day rewrite; the
+        // idempotency key includes lat/lon but a city move can also
+        // happen mid-day so we don't rely on that alone.
         await _notificationService.scheduleAllPrayerNotifications(
           times,
           settingsProvider.settings,
+          forceRefresh: true,
         );
       }
       debugPrint(
